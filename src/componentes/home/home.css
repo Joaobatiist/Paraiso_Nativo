@@ -1,0 +1,74 @@
+/* ================================================ */
+/* DESIGN TOKENS – PARAÍSO NATIVO                   */
+/* Edite aqui para alterar cores e estilos globais. */
+/* ================================================ */
+:root {
+  --blue: #004AAD;
+  --blue-hover: #1a5fc0;
+  --orange: #FFB347;
+  --orange-dark: #e89a28;
+  --bg-main: #FAF7F2;
+  --bg-sand: #F2ECE0;
+  --bg-dark: #091929;
+  --text-primary: #1A1A1A;
+  --text-secondary: #6B6560;
+  --text-light: #FAF7F2;
+  --white: #ffffff;
+  --shadow-card: 0 8px 40px rgba(0, 74, 173, 0.10);
+  --radius-card: 20px;
+  --radius-pill: 50px;
+  --transition: 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.home-page {
+  background: var(--bg-sand);
+}
+
+/* ================================================ */
+/* UTILITÁRIOS DE CABEÇALHO DE SEÇÃO                */
+/* Usados por Acomodacoes e Essencia                */
+/* ================================================ */
+.section-header {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 80px;
+}
+
+.section-label {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 14px;
+}
+
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 4.5vw, 3rem);
+  color: var(--text-primary);
+  margin: 0 0 20px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.section-title.light {
+  color: var(--text-light);
+}
+
+.section-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  line-height: 1.85;
+  margin: 0;
+}
+
+@media (max-width: 680px) {
+  .section-desc br {
+    display: none;
+  }
+}
+

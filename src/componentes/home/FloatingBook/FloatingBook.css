@@ -1,0 +1,42 @@
+.floating-book {
+  position: fixed;
+  bottom: 88px;
+  right: 28px;
+  z-index: 998;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 14px 26px;
+  background: var(--orange);
+  color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  box-shadow: 0 8px 32px rgba(255, 179, 71, 0.46);
+  transition: var(--transition);
+  animation: floatPulse 3s ease-in-out infinite;
+}
+
+.floating-book:hover {
+  background: var(--orange-dark);
+  transform: translateY(-5px) scale(1.04);
+  box-shadow: 0 16px 44px rgba(255, 179, 71, 0.58);
+}
+
+@keyframes floatPulse {
+  0%, 100% { box-shadow: 0 8px 32px rgba(255, 179, 71, 0.46); }
+  50%       { box-shadow: 0 12px 48px rgba(255, 179, 71, 0.68); }
+}
+
+@media (max-width: 680px) {
+  .floating-book span {
+    display: none;
+  }
+
+  .floating-book {
+    padding: 14px 16px;
+  }
+}
