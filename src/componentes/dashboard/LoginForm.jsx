@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { loginControlado } from '../../services/authService';
+import { FaLock } from "react-icons/fa6";
 import '../home/reserva/reserva.css';
 
 const LoginForm = ({ onLogin }) => {
@@ -9,6 +11,7 @@ const LoginForm = ({ onLogin }) => {
   const [authLoading, setAuthLoading] = useState(false);
   const [authErro, setAuthErro] = useState('');
   const [authMsg, setAuthMsg] = useState('');
+  const [bloqueioTempo, setBloqueioTempo] = useState(0);
   const [authForm, setAuthForm] = useState({
     nome: '',
     email: '',
@@ -25,6 +28,24 @@ const LoginForm = ({ onLogin }) => {
     }
   }, [user, navigate]);
 
+  // 🔒 Contagem regressiva do bloqueio
+  useEffect(() => {
+    if (bloqueioTempo <= 0) return;
+
+    const interval = setInterval(() => {
+      setBloqueioTempo((prev) => {
+        const novo = prev - 1;
+        if (novo <= 0) {
+          setAuthErro('');
+          setAuthMsg('Você pode tentar novamente agora.');
+        }
+        return novo;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [bloqueioTempo]);
+
   const handleAuthChange = (campo, valor) => {
     setAuthForm((prev) => ({ ...prev, [campo]: valor }));
     setAuthErro('');
@@ -35,6 +56,12 @@ const LoginForm = ({ onLogin }) => {
     e.preventDefault();
     setAuthErro('');
     setAuthMsg('');
+
+    // 🔒 Bloquear se ainda está em cooldown
+    if (bloqueioTempo > 0) {
+      setAuthErro(`Aguarde ${bloqueioTempo}s antes de tentar novamente.`);
+      return;
+    }
 
     if (!authForm.email.trim() || !authForm.senha.trim()) {
       setAuthErro('Informe e-mail e senha.');
@@ -55,26 +82,28 @@ const LoginForm = ({ onLogin }) => {
         return;
       }
     }
-
     setAuthLoading(true);
     try {
       if (authModo === 'login') {
-        if (onLogin) {
-          await onLogin(authForm.email.trim(), authForm.senha);
-        } else {
-          const { error } = await supabase.auth.signInWithPassword({
-            email: authForm.email.trim(),
-            password: authForm.senha,
-          });
-          if (error) throw new Error(error.message);
-        }
+    const email = authForm.email.trim();
+    const senha = authForm.senha;
 
+   await loginControlado(email, senha);
+
+  // 🔐 2. Login real (cria sessão)
+    const { error } = await supabase.auth.signInWithPassword({
+    email,
+    password: senha,
+  });
+
+  if (error) throw new Error(error.message);
+
+  setAuthForm((prev) => ({
+    ...prev,
+    senha: '',
+    confirmarSenha: '',
+  }));
         navigate('/dashboard');
-        setAuthForm((prev) => ({
-          ...prev,
-          senha: '',
-          confirmarSenha: '',
-        }));
         return;
       }
 
@@ -102,7 +131,17 @@ const LoginForm = ({ onLogin }) => {
 
       navigate('/dashboard');
     } catch (err) {
-      setAuthErro('Email ou senha incorretos!');
+      const mensagem = err.message || 'Email ou senha incorretos!';
+      
+      // 🔒 Se contém mensagem de bloqueio, ativar contagem regressiva
+      if (mensagem.includes('Muitas tentativas')) {
+        const match = mensagem.match(/(\d+)s/);
+        const segundos = match ? parseInt(match[1]) : 60;
+        setBloqueioTempo(segundos);
+        setAuthErro(`Muitas tentativas. Tente novamente em ${segundos}s`);
+      } else {
+        setAuthErro(mensagem);
+      }
     } finally {
       setAuthLoading(false);
     }
@@ -193,11 +232,18 @@ const LoginForm = ({ onLogin }) => {
             </label>
           )}
 
-          {authErro && <p className="reserva-feedback erro">{authErro}</p>}
+          {authErro && (
+            <p className="reserva-feedback erro">
+              {bloqueioTempo > 0 && <FaLock style={{ marginRight: '8px' }} />}
+              {authErro}
+            </p>
+          )}
           {authMsg && <p className="reserva-feedback sucesso">{authMsg}</p>}
 
-          <button type="submit" className="reserva-submit" disabled={authLoading}>
-            {authLoading
+          <button type="submit" className="reserva-submit" disabled={authLoading || bloqueioTempo > 0}>
+            {bloqueioTempo > 0
+              ? `Bloqueado por ${bloqueioTempo}s`
+              : authLoading
               ? 'Processando...'
               : authModo === 'cadastro'
                 ? 'Criar conta para reservar'
