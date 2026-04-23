@@ -20,6 +20,7 @@ const LoginForm = ({ onLogin }) => {
   });
   const navigate = useNavigate();
   const { user } = useAuth();
+  const BLOQUEIO_KEY = 'paraiso_login_bloqueio';
 
   // Se já estiver logado, redireciona para o dashboard
   useEffect(() => {
@@ -28,9 +29,30 @@ const LoginForm = ({ onLogin }) => {
     }
   }, [user, navigate]);
 
+  // Restaurar bloqueio do localStorage ao carregar a página
+  useEffect(() => {
+    const bloqueioArmazenado = localStorage.getItem(BLOQUEIO_KEY);
+    if (bloqueioArmazenado) {
+      const tempoExpiracao = parseInt(bloqueioArmazenado);
+      const agora = Date.now();
+      const tempoRestante = Math.ceil((tempoExpiracao - agora) / 1000);
+
+      if (tempoRestante > 0) {
+        setBloqueioTempo(tempoRestante);
+        setAuthErro(`Muitas tentativas. Tente novamente em ${tempoRestante}s`);
+      } else {
+        // Bloqueio expirou
+        localStorage.removeItem(BLOQUEIO_KEY);
+      }
+    }
+  }, []);
+
   // 🔒 Contagem regressiva do bloqueio
   useEffect(() => {
-    if (bloqueioTempo <= 0) return;
+    if (bloqueioTempo <= 0) {
+      localStorage.removeItem(BLOQUEIO_KEY);
+      return;
+    }
 
     const interval = setInterval(() => {
       setBloqueioTempo((prev) => {
@@ -38,6 +60,7 @@ const LoginForm = ({ onLogin }) => {
         if (novo <= 0) {
           setAuthErro('');
           setAuthMsg('Você pode tentar novamente agora.');
+          localStorage.removeItem(BLOQUEIO_KEY);
         }
         return novo;
       });
@@ -57,7 +80,7 @@ const LoginForm = ({ onLogin }) => {
     setAuthErro('');
     setAuthMsg('');
 
-    // 🔒 Bloquear se ainda está em cooldown
+    // Bloquear se ainda está em cooldown
     if (bloqueioTempo > 0) {
       setAuthErro(`Aguarde ${bloqueioTempo}s antes de tentar novamente.`);
       return;
@@ -90,7 +113,7 @@ const LoginForm = ({ onLogin }) => {
 
    await loginControlado(email, senha);
 
-  // 🔐 2. Login real (cria sessão)
+  // Login real (cria sessão)
     const { error } = await supabase.auth.signInWithPassword({
     email,
     password: senha,
@@ -133,10 +156,14 @@ const LoginForm = ({ onLogin }) => {
     } catch (err) {
       const mensagem = err.message || 'Email ou senha incorretos!';
       
-      // 🔒 Se contém mensagem de bloqueio, ativar contagem regressiva
+      // Se contém mensagem de bloqueio, ativar contagem regressiva
       if (mensagem.includes('Muitas tentativas')) {
         const match = mensagem.match(/(\d+)s/);
         const segundos = match ? parseInt(match[1]) : 60;
+        const tempoExpiracao = Date.now() + segundos * 1000;
+        
+        localStorage.setItem(BLOQUEIO_KEY, tempoExpiracao.toString());
+        
         setBloqueioTempo(segundos);
         setAuthErro(`Muitas tentativas. Tente novamente em ${segundos}s`);
       } else {
