@@ -4,7 +4,7 @@ import { supabase } from "../lib/supabase";
 export const perfilService = {
   async obterPerfilLogado(userId) {
     try {
-      return await supabaseService.getBy('perfis', 'id', userId, 'role');
+      return await supabaseService.getBy('perfis', 'id', userId);
     } catch (error) {
       console.error("Perfil não identificado.")
       throw error;

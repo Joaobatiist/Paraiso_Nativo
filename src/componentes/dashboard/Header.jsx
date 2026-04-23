@@ -25,7 +25,7 @@ const Header = ({ currentPage, isSidebarOpen, setIsSidebarOpen, user, perfil }) 
       </button>
       <h1 className="page-title">{getPageTitle()}</h1>
       <div className="header-actions">
-        <span className="welcome-text">Olá, {perfil?.nome || user?.email?.split('@')[0] || 'Usuário'}!</span>
+        <span className="welcome-text">Olá, {perfil?.nome  || 'Usuário'}!</span>
       </div>
     </header>
   );
