@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { FaBed, FaEdit, FaSyncAlt, FaExclamationTriangle } from 'react-icons/fa';
 import { acomodacaoService } from '../../../services/acomodacaoService';
 import EditarAcomodacaoModal from './EditarAcomodacaoModal';
+import './GerenciarAcomodacoes.css';
 
 const statusOpcoes = ['disponivel', 'manutencao', 'indisponivel'];
 
@@ -56,13 +57,7 @@ const GerenciarAcomodacoes = ({ onNovaCadastro }) => {
           <select
             value={a.status || 'disponivel'}
             onChange={(e) => handleMudarStatus(a.id, e.target.value)}
-            style={{
-              border: '1px solid var(--gray-200)',
-              borderRadius: '6px',
-              padding: '4px 8px',
-              fontSize: '13px',
-              cursor: 'pointer',
-            }}
+            className="acom-status-select"
           >
             {statusOpcoes.map(s => (
               <option key={s} value={s}>{s}</option>
@@ -92,7 +87,7 @@ const GerenciarAcomodacoes = ({ onNovaCadastro }) => {
     return (
       <div className="dash-card">
         {capa && (
-          <img src={capa} alt={a.nome} style={{ width: '100%', height: '140px', objectFit: 'cover', borderRadius: '8px', marginBottom: '10px' }} />
+          <img src={capa} alt={a.nome} />
         )}
         <h4>{a.nome}</h4>
         <p><strong>Diária:</strong> R$ {Number(a.preco_diaria || 0).toFixed(2)}</p>
@@ -107,7 +102,7 @@ const GerenciarAcomodacoes = ({ onNovaCadastro }) => {
           <select
             value={a.status || 'disponivel'}
             onChange={(e) => handleMudarStatus(a.id, e.target.value)}
-            style={{ border: '1px solid var(--gray-200)', borderRadius: '6px', padding: '6px 8px', fontSize: '13px' }}
+            className="dash-card-select"
           >
             {statusOpcoes.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
@@ -119,19 +114,19 @@ const GerenciarAcomodacoes = ({ onNovaCadastro }) => {
 
   return (
     <div className="gerenciar-acomodacoes">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
-        <h2 className="component-title" style={{ margin: 0 }}>Acomodações</h2>
-        <div style={{ display: 'flex', gap: '10px' }}>
+      <div className="acom-header">
+        <h2 className="component-title">Acomodações</h2>
+        <div className="acom-buttons">
           <button
             onClick={carregar}
-            style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--gray-300)', background: 'var(--gray-100)', cursor: 'pointer', fontSize: '13px' }}
+            className="btn-atualizar"
           >
             <FaSyncAlt /> Atualizar
           </button>
           {onNovaCadastro && (
             <button
               onClick={onNovaCadastro}
-              style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: 'var(--primary-blue)', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '13px' }}
+              className="btn-nova-acom"
             >
               + Nova Acomodação
             </button>
@@ -142,11 +137,11 @@ const GerenciarAcomodacoes = ({ onNovaCadastro }) => {
       {erro && <div className="error-message"><span className="error-icon"><FaExclamationTriangle /></span>{erro}</div>}
 
       {loading ? (
-        <p style={{ textAlign: 'center', padding: '32px', color: 'var(--gray-500)' }}>Carregando...</p>
+        <p className="acom-loading">Carregando...</p>
       ) : acomodacoes.length === 0 ? (
         <div className="empty-state">
           <p>Nenhuma acomodação cadastrada.</p>
-          {onNovaCadastro && <button className="submit-button" onClick={onNovaCadastro} style={{ marginTop: '16px', width: 'auto', padding: '10px 24px' }}>+ Cadastrar Acomodação</button>}
+          {onNovaCadastro && <button className="submit-button empty-state-button" onClick={onNovaCadastro}>+ Cadastrar Acomodação</button>}
         </div>
       ) : (
         <>

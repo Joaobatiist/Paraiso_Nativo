@@ -41,11 +41,14 @@ export function useAuth() {
   }, [user?.id]);
 
   useEffect(() => {
+    let prevUserId = null;
+
     const carregarSessaoInicial = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         setSession(session);
         setUser(session?.user ?? null);
+        prevUserId = session?.user?.id;
       } finally {
         setAuthLoading(false);
       }
@@ -53,9 +56,15 @@ export function useAuth() {
 
     carregarSessaoInicial();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      const novoUserId = session?.user?.id;
+      
       setSession(session);
       setUser(session?.user ?? null);
-      setPerfil(null);
+      
+      if (prevUserId !== novoUserId) {
+        setPerfil(null);
+      }
+      prevUserId = novoUserId;
     });
 
     return () => subscription.unsubscribe();

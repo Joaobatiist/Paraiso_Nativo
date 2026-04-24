@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaEdit, FaExclamationTriangle, FaSpinner, FaCheck } from 'react-icons/fa';
 import { supabaseService } from '../../../services/supabaseService';
+import './EditarAcomodacaoModal.css';
 
 const EditarAcomodacaoModal = ({ acomodacao, onClose, onSalvo }) => {
   const [form, setForm] = useState({
@@ -63,7 +64,7 @@ const EditarAcomodacaoModal = ({ acomodacao, onClose, onSalvo }) => {
         <h3><FaEdit /> Editar Acomodação</h3>
 
         {erro && (
-          <div className="error-message" style={{ marginBottom: '16px' }}>
+          <div className="error-message">
             <span className="error-icon"><FaExclamationTriangle /></span>{erro}
           </div>
         )}
@@ -87,11 +88,10 @@ const EditarAcomodacaoModal = ({ acomodacao, onClose, onSalvo }) => {
               value={form.descricao}
               onChange={e => handleChange('descricao', e.target.value)}
               rows={3}
-              style={{ resize: 'vertical' }}
             />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div className="form-grid">
             <div className="form-group">
               <label className="form-label">Preço da Diária (R$) *</label>
               <input
@@ -117,7 +117,7 @@ const EditarAcomodacaoModal = ({ acomodacao, onClose, onSalvo }) => {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div className="form-grid">
             <div className="form-group">
               <label className="form-label">Status</label>
               <select
