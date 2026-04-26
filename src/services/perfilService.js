@@ -1,5 +1,5 @@
 import { supabaseService } from "./supabaseService";
-import { supabase } from "../lib/supabase";
+import { supabase } from "@lib/supabase";
 
 export const perfilService = {
   async obterPerfilLogado(userId) {
@@ -42,7 +42,7 @@ export const perfilService = {
         bairro: perfil.bairro?.trim() || null,
         cidade: perfil.cidade?.trim() || null,
         estado: perfil.estado?.trim() || null,
-        role: perfil.role?.trim() || null
+        role: perfilExistente?.role || 'cliente'
       };
 
       const { data, error } = await supabase

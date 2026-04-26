@@ -1,18 +1,16 @@
 import { supabaseService } from "./supabaseService";
-import { supabase } from "../lib/supabase";
+import { supabase } from "@lib/supabase";
 
 export const reservaService = {
   
-  // 1. LISTAR RESERVAS (Com JOIN para saber o nome do quarto e do hóspede)
+
   async listarTodas() {
-    try {
-      // Usamos o mestre passando um select que traz dados das tabelas relacionadas
+    try {     
       return await supabaseService.getAll(
         'reservas', 
         '*, acomodacoes(nome), perfis(nome,email,documento,telefone)'
       );
     } catch (error) {
-      // O erro já foi logado no mestre, aqui podemos tratar algo específico se quisermos
       throw error;
     }
   },
@@ -34,26 +32,27 @@ export const reservaService = {
     }
   },
 
-  // 2. CRIAR RESERVA (Com validação de negócio)
-  async criarNovaReserva(dadosReserva) {
-    try {
-      const { data: conflito } = await supabase
-        .from('reservas')
-        .select('id')
-        .eq('id_acomodacao', dadosReserva.id_acomodacao)
-        .eq('status_reserva', 'confirmada')
-        .or(`data_checkin.lte.${dadosReserva.data_checkout},data_checkout.gte.${dadosReserva.data_checkin}`);
+async criarNovaReserva(dadosReserva) {
+  try {
+    const { data: conflito, error: erroQuery } = await supabase
+      .from('reservas')
+      .select('id')
+      .eq('id_acomodacao', dadosReserva.id_acomodacao)
+      .not('status_reserva', 'eq', 'cancelada')  
+      .lte('data_checkin', dadosReserva.data_checkout)  
+      .gte('data_checkout', dadosReserva.data_checkin); 
 
-      if (conflito && conflito.length > 0) {
-        throw new Error("Este quarto já está reservado para as datas selecionadas.");
-      }
+    if (erroQuery) throw erroQuery;
 
-      // Se passou na validação, usa o mestre para criar
-      return await supabaseService.create('reservas', dadosReserva);
-    } catch (error) {
-      throw error;
+    if (conflito) {
+      throw new Error("Este quarto já está reservado para as datas selecionadas.");
     }
-  },
+
+    return await supabaseService.create('reservas', dadosReserva);
+  } catch (error) {
+    throw error;
+  }
+},
 
   // 3. ATUALIZAR STATUS (Ex: Confirmar ou Finalizar)
   async mudarStatus(id, novoStatus) {
