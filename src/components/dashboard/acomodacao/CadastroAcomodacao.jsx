@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FaCheckCircle, FaExclamationTriangle, FaSpinner, FaCheck } from 'react-icons/fa';
-import { supabaseService } from '../../../services/supabaseService';
+import { supabaseService } from '@services/supabaseService';
+import './CadastroAcomodacao.css';
 
 const estadoInicial = {
   nome: '',
@@ -59,7 +60,7 @@ const CadastroAcomodacao = ({ onSalvo }) => {
       <h2 className="component-title">Nova Acomodação</h2>
 
       {sucesso && (
-        <div style={{ background: '#dcfce7', border: '1px solid #86efac', color: '#166534', padding: '12px', borderRadius: '8px', marginBottom: '16px', fontSize: '14px' }}>
+        <div className="sucesso-message">
           <FaCheckCircle /> {sucesso}
         </div>
       )}
@@ -90,11 +91,10 @@ const CadastroAcomodacao = ({ onSalvo }) => {
             onChange={e => handleChange('descricao', e.target.value)}
             placeholder="Descreva a acomodação..."
             rows={3}
-            style={{ resize: 'vertical' }}
           />
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <div className="form-grid-2">
           <div className="form-group">
             <label className="form-label">Preço da Diária (R$) *</label>
             <input
@@ -121,7 +121,7 @@ const CadastroAcomodacao = ({ onSalvo }) => {
           </div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <div className="form-grid-2">
           <div className="form-group">
             <label className="form-label">Status</label>
             <select

@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Header from '@components/header/Header';
+import Header from '@components/home/header/Header';
 import Home from '@components/home/Home';
 import Dashboard from '@components/dashboard/Dashboard';
 import Reserva from '@components/home/reserva/Reserva';
 import Footer from '@components/home/footer/Footer';
-import LoginForm from '@components/dashboard/LoginForm';
+import LoginForm from '@components/dashboard/login/LoginForm';
 import Sidebar from '@components/dashboard/sidebar/Sidebar';
-import { PrivateRoute } from '@components/PrivateRouter'; 
+import { PrivateRoute } from '@components/privateRouter/PrivateRouter'; 
 
 function App() {
   return (

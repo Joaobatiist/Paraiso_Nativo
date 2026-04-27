@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FaSyncAlt, FaExclamationTriangle, FaPlus } from 'react-icons/fa';
-import { supabaseService } from '../../../services/supabaseService';
+import { supabaseService } from '@services/supabaseService';
 import CadastroFuncionario from './CadastroFuncionario';
+import './GerenciarClientes.css';
 
 const GerenciarClientes = () => {
   const [perfis, setPerfis] = useState([]);
@@ -46,19 +47,13 @@ const GerenciarClientes = () => {
 
   return (
     <div className="gerenciar-funcionarios">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
-        <h2 className="component-title" style={{ margin: 0 }}>Clientes</h2>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <button
-            onClick={carregar}
-            style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--gray-300)', background: 'var(--gray-100)', cursor: 'pointer', fontSize: '13px' }}
-          >
+      <div className="header-section">
+        <h2 className="component-title">Clientes</h2>
+        <div className="header-buttons">
+          <button className="btn-refresh" onClick={carregar}>
             <FaSyncAlt /> Atualizar
           </button>
-          <button
-            onClick={() => setModalAberto(true)}
-            style={{ padding: '8px 18px', borderRadius: '8px', border: 'none', background: 'var(--primary-blue)', color: 'white', fontWeight: 600, cursor: 'pointer', fontSize: '13px' }}
-          >
+          <button className="btn-novo" onClick={() => setModalAberto(true)}>
             <FaPlus /> Novo perfil
           </button>
         </div>
@@ -67,14 +62,13 @@ const GerenciarClientes = () => {
       {erro && <div className="error-message"><span className="error-icon"><FaExclamationTriangle /></span>{erro}</div>}
 
       {loading ? (
-        <p style={{ textAlign: 'center', padding: '32px', color: 'var(--gray-500)' }}>Carregando...</p>
+        <p className="loading-text">Carregando...</p>
       ) : perfis.length === 0 ? (
         <div className="empty-state">
           <p>Nenhum perfil cadastrado.</p>
           <button
             className="submit-button"
             onClick={() => setModalAberto(true)}
-            style={{ marginTop: '16px', width: 'auto', padding: '10px 24px' }}
           >
             <FaPlus /> Cadastrar perfil
           </button>

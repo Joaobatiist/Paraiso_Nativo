@@ -3,6 +3,7 @@ import { acomodacaoService } from '@services/acomodacaoService';
 import { galeriaService } from '@services/galeriaService';
 import { storageService } from '@services/arquivoService';
 import { FaBed, FaSyncAlt, FaExclamationTriangle, FaSpinner, FaTimes } from 'react-icons/fa';
+import './GerenciarGaleria.css';
 
 const GerenciarGaleria = () => {
   const [acomodacoes, setAcomodacoes] = useState([]);
@@ -39,7 +40,7 @@ const GerenciarGaleria = () => {
       setAddForm(prev => ({ ...prev, [idAcom]: { arquivo: null, legenda: '' } }));
       await carregar();
     } catch (e) {
-      alert('Erro ao adicionar foto: ' + e.message);
+      console.error('Erro ao adicionar foto')
     } finally {
       setSalvando(prev => ({ ...prev, [idAcom]: false }));
     }
@@ -51,7 +52,7 @@ const GerenciarGaleria = () => {
       await galeriaService.removerFoto(idFoto);
       await carregar();
     } catch (e) {
-      alert('Erro ao remover foto: ' + e.message);
+      console.error('Erro ao remover foto!');
     }
   };
 
@@ -66,18 +67,18 @@ const GerenciarGaleria = () => {
     return (
       <div className="gerenciar-galeria">
         <h2 className="component-title">Galeria de Fotos</h2>
-        <p style={{ textAlign: 'center', padding: '32px', color: 'var(--gray-500)' }}>Carregando...</p>
+        <p className="galeria-loading-text">Carregando...</p>
       </div>
     );
   }
 
   return (
     <div className="gerenciar-galeria">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' }}>
-        <h2 className="component-title" style={{ margin: 0 }}>Galeria de Fotos</h2>
+      <div className="galeria-header">
+        <h2 className="component-title">Galeria de Fotos</h2>
         <button
           onClick={carregar}
-          style={{ padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--gray-300)', background: 'var(--gray-100)', cursor: 'pointer', fontSize: '13px' }}
+          className="galeria-refresh-btn"
         >
           <FaSyncAlt /> Atualizar
         </button>
@@ -93,7 +94,7 @@ const GerenciarGaleria = () => {
           const f = addForm[acom.id] || {};
           return (
             <div key={acom.id} className="galeria-acom">
-              <h3><FaBed /> {acom.nome} <span style={{ fontWeight: 400, color: 'var(--gray-500)', fontSize: '14px' }}>({fotos.length} foto{fotos.length !== 1 ? 's' : ''})</span></h3>
+              <h3><FaBed /> {acom.nome} <span className="galeria-count-badge">({fotos.length} foto{fotos.length !== 1 ? 's' : ''})</span></h3>
 
               {fotos.length > 0 ? (
                 <div className="galeria-fotos-grid">
@@ -115,7 +116,7 @@ const GerenciarGaleria = () => {
                   ))}
                 </div>
               ) : (
-                <p style={{ color: 'var(--gray-500)', fontSize: '14px', marginBottom: '12px' }}>
+                <p className="galeria-empty-text">
                   Nenhuma foto ainda.
                 </p>
               )}
@@ -127,7 +128,6 @@ const GerenciarGaleria = () => {
                   className="form-input"
                   accept="image/*"
                   onChange={e => setField(acom.id, 'arquivo', e.target.files[0] || null)}
-                  style={{ flex: 2, minWidth: '200px' }}
                 />
                 <input
                   type="text"
@@ -135,7 +135,6 @@ const GerenciarGaleria = () => {
                   placeholder="Legenda (opcional)"
                   value={f.legenda || ''}
                   onChange={e => setField(acom.id, 'legenda', e.target.value)}
-                  style={{ flex: 1, minWidth: '140px' }}
                 />
                 <button
                   className="galeria-add-btn"

@@ -4,7 +4,7 @@ import { supabase } from '@lib/supabase';
 import { useAuth } from '@hooks/useAuth';
 import { loginControlado } from '@services/authService';
 import { FaLock } from "react-icons/fa6";
-import '../home/reserva/reserva.css';
+import './LoginForm.css';
 
 const LoginForm = ({ onLogin }) => {
   const [authModo, setAuthModo] = useState('login');

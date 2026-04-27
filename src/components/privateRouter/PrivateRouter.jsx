@@ -1,12 +1,14 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@hooks/useAuth';
+import './PrivateRouter.css';
 
 export const PrivateRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
-  if (loading){ return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--gray-50)' }}>
-        <p style={{ color: 'var(--gray-500)', fontSize: '18px' }}>Carregando...</p>
+  if (loading) {
+    return (
+      <div className="private-route-loading">
+        <p>Carregando...</p>
       </div>
     );
   }

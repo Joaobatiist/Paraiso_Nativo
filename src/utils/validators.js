@@ -108,3 +108,33 @@ export const validarReservaHome = (dados) => {
     erros,
   };
 };
+
+// ── VALIDAÇÃO PARA CADASTRO DE FUNCIONÁRIO ──
+export const validarCadastroFuncionario = (form) => {
+  const validadores = [
+    criarValidador('nome', !form.nome.trim(), 'Nome é obrigatório'),
+    criarValidador('nome', form.nome.trim() && !validarNome(form.nome.trim()), 'Nome deve ter pelo menos 3 caracteres'),
+    criarValidador('documento', !form.documento.trim(), 'CPF é obrigatório'),
+    criarValidador('documento', form.documento.trim() && !validarCPF(form.documento), 'CPF inválido'),
+    criarValidador('cidade', form.cidade.trim() && !validarCidade(form.cidade.trim()), 'Apenas letras são permitidas na cidade'),
+    criarValidador('cep', form.cep.trim() && !validarCEP(form.cep), 'CEP inválido (deve ter 8 dígitos ou formato 00000-000)'),
+    criarValidador('email', !form.email.trim(), 'E-mail é obrigatório'),
+    criarValidador('email', form.email.trim() && !validarEmail(form.email), 'E-mail inválido'),
+    criarValidador('senha', !form.senha, 'Senha é obrigatória'),
+    criarValidador('senha', form.senha && form.senha.length < 6, 'Mínimo de 6 caracteres'),
+    criarValidador('senha', form.senha && !/[A-Za-z]/.test(form.senha), 'Use ao menos uma letra'),
+    criarValidador('senha', form.senha && !/[0-9]/.test(form.senha), 'Use ao menos um número'),
+    criarValidador('confirmarSenha', !form.confirmarSenha, 'Confirme a senha'),
+    criarValidador('confirmarSenha', form.senha && form.confirmarSenha && form.senha !== form.confirmarSenha, 'As senhas não coincidem'),
+  ];
+
+  const erros = {};
+  validadores.forEach(({ campo, condicao, mensagem }) => {
+    if (condicao) erros[campo] = mensagem;
+  });
+
+  return {
+    valido: Object.keys(erros).length === 0,
+    erros,
+  };
+};

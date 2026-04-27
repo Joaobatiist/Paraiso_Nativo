@@ -1,0 +1,14 @@
+.private-route-loading {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 100vh;
+	background: var(--gray-50);
+}
+
+.private-route-loading p {
+	color: var(--gray-500);
+	font-size: 18px;
+	margin: 0;
+	font-family: 'Inter', sans-serif;
+}

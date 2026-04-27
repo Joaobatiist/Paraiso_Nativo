@@ -3,9 +3,13 @@ import {
   FaCheckCircle, FaExclamationTriangle, FaUserPlus, FaEye, FaEyeSlash,
   FaSpinner, FaTimes, FaLock, FaUser, FaEnvelope, FaIdCard, FaBriefcase, FaMapMarkerAlt,
 } from 'react-icons/fa';
-import { perfilService } from '../../../services/perfilService';
-import { supabase } from '../../../lib/supabase';
+import { mascaraCPF, mascaraCEP, apenasLetras } from '@utils/masks';
+import { forcaSenha } from '@utils/formatters';
+import { perfilService } from '@services/perfilService';
+import { supabase } from '@lib/supabase';
 import './CadastroFuncionario.css';
+import { validarCadastroFuncionario } from '@utils/validators';
+
 
 /* ── Field fora do componente pai para não perder foco a cada keystroke ── */
 const Field = ({ campo, label, type = 'text', placeholder, icon: Icon, required, autoComplete, end, value, onChange, error }) => (
@@ -26,53 +30,6 @@ const Field = ({ campo, label, type = 'text', placeholder, icon: Icon, required,
     {error && <span className="cf-field-error"><FaExclamationTriangle />{error}</span>}
   </div>
 );
-
-/* ══════════════════════════════════════
-   MÁSCARAS DE FORMATAÇÃO
-══════════════════════════════════════ */
-const mascaraCPF = (v) => {
-  const d = v.replace(/\D/g, '').slice(0, 11);
-  if (d.length <= 3) return d;
-  if (d.length <= 6) return `${d.slice(0,3)}.${d.slice(3)}`;
-  if (d.length <= 9) return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6)}`;
-  return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`;
-};
-
-const mascaraCEP = (v) => {
-  const d = v.replace(/\D/g, '').slice(0, 8);
-  if (d.length <= 5) return d;
-  return `${d.slice(0,5)}-${d.slice(5)}`;
-};
-
-const apenasLetras = (v) =>
-  v.replace(/[^a-zA-ZÀ-ÿ\s]/g, '');
-
-const validarCPF = (cpf) => {
-  const d = cpf.replace(/\D/g, '');
-  if (d.length !== 11) return false;
-  if (/^(\d)\1{10}$/.test(d)) return false;
-  const calc = (len) => {
-    let sum = 0;
-    for (let i = 0; i < len; i++) sum += parseInt(d[i]) * (len + 1 - i);
-    const r = (sum * 10) % 11;
-    return r === 10 || r === 11 ? 0 : r;
-  };
-  return calc(9) === parseInt(d[9]) && calc(10) === parseInt(d[10]);
-};
-
-
-const forcaSenha = (senha) => {
-  if (!senha) return { nivel: 0, texto: '', cor: '' };
-  let pontos = 0;
-  if (senha.length >= 6)  pontos++;
-  if (senha.length >= 10) pontos++;
-  if (/[A-Z]/.test(senha)) pontos++;
-  if (/[0-9]/.test(senha)) pontos++;
-  if (/[^A-Za-z0-9]/.test(senha)) pontos++;
-  if (pontos <= 1) return { nivel: 1, texto: 'Fraca',  cor: '#ef4444' };
-  if (pontos <= 3) return { nivel: 2, texto: 'Média',  cor: '#f59e0b' };
-  return               { nivel: 3, texto: 'Forte',  cor: '#10b981' };
-};
 
 const estadoInicial = {
   nome: '', email: '', documento: '',
@@ -97,62 +54,17 @@ const CadastroFuncionario = ({ onClose, onSuccess }) => {
     if (errors[campo]) setErrors(prev => ({ ...prev, [campo]: '' }));
   };
 
-  const validate = () => {
-    const errs = {};
-
-    // Nome
-    if (!form.nome.trim())
-      errs.nome = 'Nome é obrigatório';
-    else if (form.nome.trim().length < 3)
-      errs.nome = 'Mínimo de 3 caracteres';
-    else if (!/^[a-zA-ZÀ-ÿ\s]+$/.test(form.nome.trim()))
-      errs.nome = 'Apenas letras são permitidas';
-
-    // CPF
-    if (!form.documento.trim())
-      errs.documento = 'CPF é obrigatório';
-    else if (!validarCPF(form.documento))
-      errs.documento = 'CPF inválido';
-
-    // Cidade (opcional)
-    if (form.cidade.trim() && !/^[a-zA-ZÀ-ÿ\s]+$/.test(form.cidade.trim()))
-      errs.cidade = 'Apenas letras são permitidas';
-
-    // CEP (opcional, mas se preenchido valida formato)
-    if (form.cep.trim() && form.cep.replace(/\D/g, '').length !== 8)
-      errs.cep = 'CEP deve ter 8 dígitos';
-
-    // E-mail
-    if (!form.email.trim())
-      errs.email = 'E-mail é obrigatório';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-      errs.email = 'E-mail inválido';
-
-    // Senha
-    if (!form.senha)
-      errs.senha = 'Senha é obrigatória';
-    else if (form.senha.length < 6)
-      errs.senha = 'Mínimo de 6 caracteres';
-    else if (!/[A-Za-z]/.test(form.senha))
-      errs.senha = 'Use ao menos uma letra';
-    else if (!/[0-9]/.test(form.senha))
-      errs.senha = 'Use ao menos um número';
-
-    // Confirmar senha
-    if (!form.confirmarSenha)
-      errs.confirmarSenha = 'Confirme a senha';
-    else if (form.senha !== form.confirmarSenha)
-      errs.confirmarSenha = 'As senhas não coincidem';
-
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
-
+  
   const forca = forcaSenha(form.senha);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+
+   const validacao = validarCadastroFuncionario(form);
+    if (!validacao.valido) {
+    setErrors(validacao.erros);
+    return;
+  }
     setIsLoading(true);
     setErrors({});
     try {

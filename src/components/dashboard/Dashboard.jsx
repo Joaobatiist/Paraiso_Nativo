@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@lib/supabase';
-import { perfilService } from '@services/perfilService';
 import './dashboard.css';
-
 import Sidebar from './sidebar/Sidebar';
 import Header from './header/Header';
 import DashboardContent from './DashboardContent';
 import GerenciarReservas from './reserva/GerenciarReservas';
 import GerenciarAcomodacoes from './acomodacao/GerenciarAcomodacoes';
 import CadastroAcomodacao from './acomodacao/CadastroAcomodacao';
-import GerenciarGaleria from './GerenciarGaleria';
+import GerenciarGaleria from './galeria/GerenciarGaleria';
 import GerenciarClientes from './cadastroPerfil/GerenciarClientes';
 import Reserva from '../home/reserva/Reserva';
 import { useAuth } from '@hooks/useAuth';
 import { useResponsiveSidebar } from '@hooks/useResponsiveSidebar';
+import { PrivateRoute } from '@components/privateRouter/PrivateRouter';
 
 const Dashboard = () => {
   const { user, session, perfil, loading } = useAuth();
@@ -38,12 +37,9 @@ const Dashboard = () => {
   const roleAtual = (perfil?.role || '').toString().toLowerCase();
   const isAdmin = roleAtual === 'admin';
   const isCliente = !isAdmin;
+  
   if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: 'var(--gray-50)' }}>
-        <p style={{ color: 'var(--gray-500)', fontSize: '18px' }}>Carregando...</p>
-      </div>
-    );
+   return <PrivateRoute/>;
   }
 
   

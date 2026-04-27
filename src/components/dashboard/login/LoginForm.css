@@ -1,0 +1,181 @@
+.reserva-login-page {
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	background: linear-gradient(135deg, #f3f7ff 0%, #fafbfd 100%);
+}
+
+.login-back {
+	display: inline-block;
+	margin-bottom: 18px;
+	border: none;
+	background: transparent;
+	color: var(--blue);
+	font-family: 'Inter', sans-serif;
+	font-weight: 600;
+	font-size: .92rem;
+	cursor: pointer;
+	transition: color .2s ease;
+}
+
+.login-back:hover {
+	color: #1f6dd6;
+	text-decoration: underline;
+}
+
+.login-header {
+	margin-bottom: 20px;
+	text-align: center;
+}
+
+.login-logo {
+	display: block;
+	max-width: 120px;
+	height: auto;
+	margin: 0 auto 16px;
+}
+
+.reserva-auth-gate {
+	max-width: 620px;
+	margin: 0 auto;
+	background: #fff;
+	border: 1px solid rgba(0, 74, 173, 0.14);
+	border-radius: 20px;
+	box-shadow: var(--shadow-card);
+	padding: 26px;
+}
+
+.reserva-auth-gate h3 {
+	margin: 0;
+	font-family: 'Playfair Display', serif;
+	color: #13263d;
+	font-size: 1.65rem;
+}
+
+.reserva-auth-gate p {
+	margin: 10px 0 18px;
+	font-family: 'Inter', sans-serif;
+	color: #4a6178;
+	line-height: 1.65;
+}
+
+.reserva-auth-tabs {
+	display: inline-flex;
+	border: 1px solid #d6e0ef;
+	border-radius: 999px;
+	padding: 4px;
+	margin-bottom: 14px;
+	gap: 4px;
+}
+
+.reserva-auth-tabs button {
+	border: none;
+	border-radius: 999px;
+	padding: 8px 16px;
+	font-family: 'Inter', sans-serif;
+	font-size: .9rem;
+	color: #2f4861;
+	background: transparent;
+	cursor: pointer;
+	transition: background-color .2s ease, color .2s ease;
+}
+
+.reserva-auth-tabs button.ativo {
+	background: var(--blue);
+	color: #fff;
+}
+
+.reserva-auth-form {
+	display: grid;
+	gap: 12px;
+}
+
+.reserva-auth-form label {
+	display: grid;
+	gap: 6px;
+	font-family: 'Inter', sans-serif;
+	font-size: .88rem;
+	color: #334e68;
+}
+
+.reserva-auth-form input {
+	border: 1px solid #d7dee9;
+	border-radius: 10px;
+	padding: 10px 11px;
+	font-family: 'Inter', sans-serif;
+	font-size: .94rem;
+	transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.reserva-auth-form input:focus {
+	outline: none;
+	border-color: var(--blue);
+	box-shadow: 0 0 0 3px rgba(0, 74, 173, 0.12);
+}
+
+.reserva-feedback {
+	margin: 14px 0 0;
+	border-radius: 10px;
+	padding: 10px 12px;
+	font-family: 'Inter', sans-serif;
+	font-size: .92rem;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.reserva-feedback.erro {
+	background: #fff2f2;
+	border: 1px solid #ffc9c9;
+	color: #b42318;
+}
+
+.reserva-feedback.sucesso {
+	background: #ecfdf3;
+	border: 1px solid #86efac;
+	color: #166534;
+}
+
+.reserva-submit {
+	margin-top: 14px;
+	width: 100%;
+	border: none;
+	border-radius: 12px;
+	padding: 13px 18px;
+	background: linear-gradient(90deg, var(--blue), #1f6dd6);
+	color: #fff;
+	font-family: 'Inter', sans-serif;
+	font-weight: 700;
+	font-size: .95rem;
+	cursor: pointer;
+	transition: filter .2s ease;
+}
+
+.reserva-submit:hover:not(:disabled) {
+	filter: brightness(1.08);
+}
+
+.reserva-submit:disabled {
+	opacity: .58;
+	cursor: not-allowed;
+}
+
+@media (max-width: 720px) {
+	.reserva-auth-gate {
+		padding: 20px;
+	}
+
+	.login-logo {
+		max-width: 100px;
+	}
+
+	.reserva-auth-gate h3 {
+		font-size: 1.35rem;
+	}
+
+	.reserva-auth-form input {
+		font-size: .88rem;
+	}
+}
