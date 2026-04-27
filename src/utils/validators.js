@@ -95,7 +95,8 @@ export const validarReservaHome = (dados) => {
     criarValidador('data_checkin', !form.data_checkin, 'Selecione a data de check-in.'),
     criarValidador('data_checkout', !form.data_checkout, 'Selecione a data de check-out.'),
     criarValidador('data_checkout', form.data_checkin && form.data_checkout <= form.data_checkin, 'A data de check-out deve ser depois do check-in.'),
-    criarValidador('num_hospedes', Number(form.num_hospedes) > acomodacaoSelecionada?.capacidadePessoas, `Esta acomodação aceita até ${acomodacaoSelecionada?.capacidadePessoas} hóspede(s).`),
+    criarValidador('hospedes', Number(form.hospedes) > acomodacaoSelecionada?.capacidadePessoas, `Esta acomodação aceita até ${acomodacaoSelecionada?.capacidadePessoas} hóspede(s).`),
+  
   ];
 
   const erros = {};

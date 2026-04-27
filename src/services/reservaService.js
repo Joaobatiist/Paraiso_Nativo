@@ -44,7 +44,7 @@ async criarNovaReserva(dadosReserva) {
 
     if (erroQuery) throw erroQuery;
 
-    if (conflito) {
+    if (conflito && conflito.length > 0) {
       throw new Error("Este quarto já está reservado para as datas selecionadas.");
     }
 
