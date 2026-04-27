@@ -1,0 +1,132 @@
+.cadastro-acomodacao {
+  padding: 20px;
+}
+
+.cadastro-acomodacao .component-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+/* Mensagem de sucesso */
+.cadastro-acomodacao .sucesso-message {
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  color: #166534;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cadastro-acomodacao .sucesso-message svg {
+  flex-shrink: 0;
+}
+
+/* Formulário */
+.cadastro-acomodacao form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.cadastro-acomodacao .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cadastro-acomodacao .form-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+}
+
+.cadastro-acomodacao .form-input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+
+.cadastro-acomodacao .form-input:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 4px rgba(76, 175, 80, 0.3);
+}
+
+.cadastro-acomodacao textarea.form-input {
+  resize: vertical;
+  font-family: inherit;
+  min-height: 80px;
+}
+
+/* Grid de dois campos */
+.cadastro-acomodacao .form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Botão submit */
+.cadastro-acomodacao .submit-button {
+  padding: 12px 24px;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.2s;
+}
+
+.cadastro-acomodacao .submit-button:hover:not(:disabled) {
+  background: #45a049;
+}
+
+.cadastro-acomodacao .submit-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.cadastro-acomodacao .loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Mensagem de erro */
+.cadastro-acomodacao .error-message {
+  background: #fee;
+  border: 1px solid #fcc;
+  color: #c33;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cadastro-acomodacao .error-icon {
+  flex-shrink: 0;
+}

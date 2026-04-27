@@ -1,12 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Header from './componentes/header/header';
-import Home from './componentes/home/home';
-import Dashboard from './componentes/dashboard/Dashboard';
-import Reserva from './componentes/home/reserva/reserva';
-import Footer from './componentes/home/footer/footer';
-import LoginForm from './componentes/dashboard/LoginForm';
-import Sidebar from './componentes/dashboard/Sidebar';
-import { PrivateRoute } from './componentes/PriveteRouter'; // Onde você salvou o passo anterior
+import Header from '@components/home/header/Header';
+import Home from '@components/home/Home';
+import Dashboard from '@components/dashboard/Dashboard';
+import Reserva from '@components/home/reserva/Reserva';
+import Footer from '@components/home/footer/Footer';
+import LoginForm from '@components/dashboard/login/LoginForm';
+import Sidebar from '@components/dashboard/sidebar/Sidebar';
+import { PrivateRoute } from '@components/privateRouter/PrivateRouter'; 
 
 function App() {
   return (

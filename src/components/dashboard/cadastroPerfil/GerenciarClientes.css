@@ -1,0 +1,189 @@
+.gerenciar-funcionarios {
+  padding: 20px;
+}
+
+/* Header com título e botões */
+.gerenciar-funcionarios .header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.gerenciar-funcionarios .header-section .component-title {
+  margin: 0;
+}
+
+.gerenciar-funcionarios .header-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* Botão Atualizar */
+.gerenciar-funcionarios .btn-refresh {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--gray-300);
+  background: var(--gray-100);
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+
+.gerenciar-funcionarios .btn-refresh:hover {
+  background: var(--gray-200);
+}
+
+/* Botão Novo Perfil */
+.gerenciar-funcionarios .btn-novo {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  background: var(--primary-blue);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s;
+}
+
+.gerenciar-funcionarios .btn-novo:hover {
+  background: #0056b3;
+}
+
+/* Loading */
+.gerenciar-funcionarios .loading-text {
+  text-align: center;
+  padding: 32px;
+  color: var(--gray-500);
+}
+
+/* Tabela responsiva */
+.gerenciar-funcionarios .dash-table-wrap {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.gerenciar-funcionarios table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gerenciar-funcionarios table thead {
+  background: var(--gray-100);
+  border-bottom: 2px solid var(--gray-300);
+}
+
+.gerenciar-funcionarios table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--gray-700);
+  font-size: 13px;
+}
+
+.gerenciar-funcionarios table td {
+  padding: 12px;
+  border-bottom: 1px solid var(--gray-200);
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+.gerenciar-funcionarios table tbody tr:hover {
+  background: var(--gray-50);
+}
+
+/* Cards para mobile */
+.gerenciar-funcionarios .dash-card {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.gerenciar-funcionarios .dash-card h4 {
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: var(--gray-800);
+  font-size: 15px;
+}
+
+.gerenciar-funcionarios .dash-card p {
+  margin: 8px 0;
+  font-size: 13px;
+  color: var(--gray-600);
+}
+
+.gerenciar-funcionarios .dash-card p strong {
+  color: var(--gray-800);
+}
+
+/* Empty State */
+.gerenciar-funcionarios .empty-state {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.gerenciar-funcionarios .empty-state p {
+  font-size: 14px;
+  color: var(--gray-600);
+  margin-bottom: 16px;
+}
+
+.gerenciar-funcionarios .empty-state .submit-button {
+  width: auto;
+  padding: 10px 24px;
+}
+
+/* Erro */
+.gerenciar-funcionarios .error-message {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px;
+  background: #fee;
+  border: 1px solid #fcc;
+  border-radius: 8px;
+  color: #c33;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.gerenciar-funcionarios .error-icon {
+  flex-shrink: 0;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+  .gerenciar-funcionarios .header-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .gerenciar-funcionarios .dash-table-desktop {
+    display: none;
+  }
+
+  .gerenciar-funcionarios .dash-cards-mobile {
+    display: block;
+  }
+}
+
+@media (min-width: 769px) {
+  .gerenciar-funcionarios .dash-cards-mobile {
+    display: none;
+  }
+
+  .gerenciar-funcionarios .dash-table-desktop {
+    display: block;
+  }
+}
