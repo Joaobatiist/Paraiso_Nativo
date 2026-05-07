@@ -7,6 +7,7 @@ import {
 import { acomodacaoService } from '@services/acomodacaoService';
 import { reservaService } from '@services/reservaService';
 import { perfilService } from '@services/perfilService';
+import { calcularReservaService } from '@services/calcularReservaService';
 import './CadastroReserva.css';
 
 /* ── Field fora do componente pai (evita perda de foco) ── */
@@ -167,22 +168,27 @@ const CadastroReserva = ({ onClose, onSuccess }) => {
 
       const idUsuario = perfilData?.id ?? perfilData?.[0]?.id ?? null;
 
-      // Calcula valor_total: diária × número de noites
+      // Busca dados da acomodação
       const acomodacao = acomodacoes.find(a => a.id === form.id_acomodacao);
-      const noites = Math.max(
-        1,
-        Math.round(
-          (new Date(form.data_checkout) - new Date(form.data_checkin)) / (1000 * 60 * 60 * 24)
-        )
+      
+      if (!acomodacao) {
+        throw new Error('Acomodação não encontrada');
+      }
+
+      // Calcula valor_total considerando pacotes promocionais
+      const resultadoCalculo = await calcularReservaService.calcularValorTotal(
+        form.id_acomodacao,
+        form.data_checkin,
+        form.data_checkout,
+        acomodacao.preco_diaria
       );
-      const valorTotal = acomodacao ? acomodacao.preco_diaria * noites : 0;
 
       await reservaService.criarNovaReserva({
         id_usuario: idUsuario,
         id_acomodacao: form.id_acomodacao,
         data_checkin: form.data_checkin,
         data_checkout: form.data_checkout,
-        valor_total: valorTotal,
+        valor_total: resultadoCalculo.valorTotal,
         status_reserva: 'pendente',
       });
 

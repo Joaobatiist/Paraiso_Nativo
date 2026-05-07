@@ -22,6 +22,7 @@ const Sidebar = ({ user, perfil, currentPage, setCurrentPage, isSidebarOpen, set
         { id: 'acomodacoes', icon: FaBed, label: 'Acomodações' },
         { id: 'galeria', icon: FaImages, label: 'Galeria de Fotos' },
         { id: 'clientes', icon: FaUsers, label: 'Clientes' },
+        { id: 'calendario', icon: FaCalendarAlt, label: 'Calendário'}
       ];
 
   const footerItems = [
