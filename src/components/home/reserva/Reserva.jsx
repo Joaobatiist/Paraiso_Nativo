@@ -3,6 +3,8 @@ import { FaCalendarAlt, FaChevronLeft, FaChevronRight, FaImage, FaUserFriends } 
 import { acomodacaoService } from '@services/acomodacaoService';
 import { reservaService } from '@services/reservaService';
 import { perfilService } from '@services/perfilService';
+import { calcularReservaService } from '@services/calcularReservaService';
+import { pacotePromoService } from '@services/pacotePromoService';
 import { useAuth } from '@hooks/useAuth';
 import { normalizarAcomodacao } from '@utils/normalizadores';
 import { calcularNoites,calcularDiariaPorHospedes } from '@utils/calculadores';
@@ -42,6 +44,8 @@ const Reserva = () => {
     estado: '',
   });
   const [salvando, setSalvando] = useState(false);
+  const [valorEstimadoCalculado, setValorEstimadoCalculado] = useState(0);
+  const [calculandoValor, setCalculandoValor] = useState(false);
   
   
 
@@ -115,15 +119,41 @@ const Reserva = () => {
     [acomodacoes, acomodacaoSelecionadaId]
   );
 
-  const fotosSelecionadas = acomodacaoSelecionada?.fotos || [];
+  // Calcular valor estimado considerando pacotes
+  useEffect(() => {
+    const calcularValor = async () => {
+      if (!acomodacaoSelecionada?.id || !form.data_checkin || !form.data_checkout) {
+        setValorEstimadoCalculado(0);
+        return;
+      }
+
+      setCalculandoValor(true);
+      try {
+        const resultado = await calcularReservaService.calcularValorTotal(
+          acomodacaoSelecionada.id,
+          form.data_checkin,
+          form.data_checkout,
+          acomodacaoSelecionada.precoDiaria
+        );
+        setValorEstimadoCalculado(resultado.valorTotal);
+      } catch (error) {
+        // Se houver erro, usa o cálculo simples
+        const noites = calcularNoites(form.data_checkin, form.data_checkout);
+        const valorDiaria = calcularDiariaPorHospedes(form.hospedes, acomodacaoSelecionada?.precoDiaria);
+        setValorEstimadoCalculado(valorDiaria * noites);
+      } finally {
+        setCalculandoValor(false);
+      }
+    };
+
+    calcularValor();
+  }, [acomodacaoSelecionada?.id, form.data_checkin, form.data_checkout]);
+
   const noites = calcularNoites(form.data_checkin, form.data_checkout);
-
-
-  const valorDiaria = calcularDiariaPorHospedes(
-    form.hospedes,
-    acomodacaoSelecionada?.precoDiaria
-  );
-  const valorEstimado = valorDiaria * noites;
+  const valorDiaria = calcularDiariaPorHospedes(form.hospedes, acomodacaoSelecionada?.precoDiaria);
+  const valorEstimado = valorEstimadoCalculado > 0 ? valorEstimadoCalculado : valorDiaria * noites;
+  
+  const fotosSelecionadas = acomodacaoSelecionada?.fotos || [];
 
   const handleSelecionarAcomodacao = (id) => {
     setAcomodacaoSelecionadaId(id);
@@ -185,6 +215,37 @@ const Reserva = () => {
 
     setSalvando(true);
     try {
+      // Verificar conflito com pacotes promocionais
+      const pacotesEmConflito = await pacotePromoService.listarPorAcomodacaoEIntervalo(
+        acomodacaoSelecionada.id,
+        form.data_checkin,
+        form.data_checkout
+      );
+
+      // Verificar se há sobreposição parcial com pacotes
+      const pacotesComSobreposicaoParcial = pacotesEmConflito.filter(pacote => {
+        const dataInicialPacote = new Date(pacote.data_inicial).toISOString().substring(0, 10);
+        const dataFinalPacote = new Date(pacote.data_final).toISOString().substring(0, 10);
+
+        const sobreposicaoPermitida = 
+          (form.data_checkin === dataInicialPacote && form.data_checkout === dataFinalPacote) ||
+          (form.data_checkin <= dataInicialPacote && form.data_checkout >= dataFinalPacote);
+
+        return !sobreposicaoPermitida;
+      });
+
+      if (pacotesComSobreposicaoParcial.length > 0) {
+        const datasConflito = pacotesComSobreposicaoParcial.map(pacote => {
+          const dataInicial = new Date(pacote.data_inicial).toLocaleDateString('pt-BR');
+          const dataFinal = new Date(pacote.data_final).toLocaleDateString('pt-BR');
+          return `${dataInicial} a ${dataFinal}`;
+        }).join(', ');
+        
+        setErro(`Uma ou mais datas selecionadas não podem ser efetuadas. As seguintes datas fazem parte de um pacote: ${datasConflito}. Por favor, selecione outras datas ou o período completo do pacote.`);
+        setSalvando(false);
+        return;
+      }
+
       await perfilService.salvarPerfilCliente(session.user.id, perfilForm);
 
       await reservaService.criarNovaReserva({
