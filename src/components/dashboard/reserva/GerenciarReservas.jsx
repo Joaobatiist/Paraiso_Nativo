@@ -2,6 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { reservaService } from '@services/reservaService';
 import CadastroReserva from './CadastroReserva';
 import { FaCheck, FaTimes, FaSyncAlt, FaExclamationTriangle, FaPlus } from 'react-icons/fa';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { eachDayOfInterval, parseISO } from 'date-fns';
 
 const formatarData = (d) => {
   if (!d) return '—';

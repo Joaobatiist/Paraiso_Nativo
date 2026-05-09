@@ -9,6 +9,7 @@ import GerenciarAcomodacoes from './acomodacao/GerenciarAcomodacoes';
 import CadastroAcomodacao from './acomodacao/CadastroAcomodacao';
 import GerenciarGaleria from './galeria/GerenciarGaleria';
 import GerenciarClientes from './cadastroPerfil/GerenciarClientes';
+import Calendario from './calendario/Calendario';
 import Reserva from '../home/reserva/Reserva';
 import { useAuth } from '@hooks/useAuth';
 import { useResponsiveSidebar } from '@hooks/useResponsiveSidebar';
@@ -62,6 +63,10 @@ const Dashboard = () => {
       isCliente 
         ? <GerenciarReservas modoCliente userId={session?.user?.id} />
         : <GerenciarClientes />,
+    calendario: () => 
+      isCliente 
+        ? <GerenciarReservas modoCliente userId={session?.user?.id} />
+        : <Calendario />,
     dashboard: () => <DashboardContent setCurrentPage={setCurrentPage} modoCliente={isCliente} userId={session?.user?.id} />,
   };
 
