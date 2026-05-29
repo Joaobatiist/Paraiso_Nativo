@@ -1,14 +1,14 @@
 import { pacotePromoService } from './pacotePromoService';
+import { calcularDiariaPorHospedes } from '@utils/calculadores';
 
 export const calcularReservaService = {
-  // Calcular valor total da reserva considerando pacotes
-  async calcularValorTotal(acomodacaoId, dataInicio, dataFim, valorDiaria) {
+  async calcularValorTotal(acomodacaoId, dataInicio, dataFim, valorDiaria, hospede) {
     try {
       // Buscar pacotes que se sobrepõem ao período
       const pacotes = await pacotePromoService.listarPorAcomodacaoEIntervalo(
         acomodacaoId,
         dataInicio,
-        dataFim
+        dataFim,
       );
       
       // Normalizar datas (remover hora para comparação correta)
@@ -20,11 +20,18 @@ export const calcularReservaService = {
       const inicio = normalizarData(dataInicio);
       const fim = normalizarData(dataFim);
       
-      // Calcular número de dias (não de noites)
-      const dias = Math.ceil((fim - inicio) / (1000 * 60 * 60 * 24)) + 1;
+      // Calcular número de dias do período selecionado.
+      const dias = Math.ceil((fim - inicio) / (1000 * 60 * 60 * 24));
+
+      if (dias <= 0) {
+        throw new Error('Período de reserva inválido.');
+      }
+
+      const diariaPorHospedes = calcularDiariaPorHospedes(hospede, valorDiaria);
 
       let valorTotal = 0;
       const detalhesArray = [];
+      const pacotesJaCobrado = new Set();
 
       // Iterar por cada dia da reserva
       for (let i = 0; i < dias; i++) {
@@ -43,29 +50,29 @@ export const calcularReservaService = {
         });
 
         if (pacoteAplicavel) {
-          // Se está no pacote, dividir o valor do pacote pela quantidade de dias do pacote
-          const pacInicio = normalizarData(pacoteAplicavel.data_inicial);
-          const pacFim = normalizarData(pacoteAplicavel.data_final);
-          const diasPacote = Math.ceil((pacFim - pacInicio) / (1000 * 60 * 60 * 24)) + 1;
-          
-          const valorDia = pacoteAplicavel.valor / diasPacote;
-          valorTotal += valorDia;
+          const valorPacote = Number(pacoteAplicavel.valor) || 0;
+          const pacoteJaCobrado = pacotesJaCobrado.has(pacoteAplicavel.id);
+
+          if (!pacoteJaCobrado) {
+            valorTotal += valorPacote;
+            pacotesJaCobrado.add(pacoteAplicavel.id);
+          }
           
           detalhesArray.push({
             data: diaString,
             eh_pacote: true,
             descricao: `Pacote: ${pacoteAplicavel.descricao}`,
-            valor: parseFloat(valorDia.toFixed(2))
+            valor: parseFloat((pacoteJaCobrado ? 0 : valorPacote).toFixed(2))
           });
         } else {
-          // Se não está no pacote, usar valor da diária normal
-          valorTotal += valorDiaria;
+          // Se não está no pacote, usar valor da diária normal com acréscimo por hóspede extra.
+          valorTotal += diariaPorHospedes;
           
           detalhesArray.push({
             data: diaString,
             eh_pacote: false,
             descricao: 'Diária Normal',
-            valor: parseFloat(valorDiaria.toFixed(2))
+            valor: parseFloat(diariaPorHospedes.toFixed(2))
           });
         }
       }
@@ -73,7 +80,7 @@ export const calcularReservaService = {
       const resultado = {
         dias,
         valorDiaria: parseFloat(valorDiaria.toFixed(2)),
-        pacotesAplicados: pacotes.length > 0,
+        pacotesAplicados: pacotesJaCobrado.size > 0,
         detalhes: detalhesArray,
         valorTotal: parseFloat(valorTotal.toFixed(2))
       };

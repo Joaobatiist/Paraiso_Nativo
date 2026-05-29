@@ -8,7 +8,7 @@ import { pacotePromoService } from '@services/pacotePromoService';
 import { useAuth } from '@hooks/useAuth';
 import { normalizarAcomodacao } from '@utils/normalizadores';
 import { calcularNoites,calcularDiariaPorHospedes } from '@utils/calculadores';
-import { formatarMoeda, hoje } from '@utils/formatters';
+import { formatarMoeda, hoje, formatarData } from '@utils/formatters';
 import { validarReservaHome } from '@utils/validators';
 import { 
   mascaraTelefone, 
@@ -133,7 +133,8 @@ const Reserva = () => {
           acomodacaoSelecionada.id,
           form.data_checkin,
           form.data_checkout,
-          acomodacaoSelecionada.precoDiaria
+          acomodacaoSelecionada.precoDiaria,
+          form.hospedes
         );
         setValorEstimadoCalculado(resultado.valorTotal);
       } catch (error) {
@@ -147,7 +148,7 @@ const Reserva = () => {
     };
 
     calcularValor();
-  }, [acomodacaoSelecionada?.id, form.data_checkin, form.data_checkout]);
+  }, [acomodacaoSelecionada?.id, form.data_checkin, form.data_checkout, form.hospedes]);
 
   const noites = calcularNoites(form.data_checkin, form.data_checkout);
   const valorDiaria = calcularDiariaPorHospedes(form.hospedes, acomodacaoSelecionada?.precoDiaria);
@@ -222,26 +223,26 @@ const Reserva = () => {
         form.data_checkout
       );
 
-      // Verificar se há sobreposição parcial com pacotes
-      const pacotesComSobreposicaoParcial = pacotesEmConflito.filter(pacote => {
-        const dataInicialPacote = new Date(pacote.data_inicial).toISOString().substring(0, 10);
-        const dataFinalPacote = new Date(pacote.data_final).toISOString().substring(0, 10);
+      const pacotesComSobreposicaoParcial = pacotesEmConflito.filter((pacote) => {
+        const dataInicialPacote = String(pacote.data_inicial).split('T')[0];
+        const dataFinalPacote = String(pacote.data_final).split('T')[0];
 
-        const sobreposicaoPermitida = 
-          (form.data_checkin === dataInicialPacote && form.data_checkout === dataFinalPacote) ||
-          (form.data_checkin <= dataInicialPacote && form.data_checkout >= dataFinalPacote);
+        const cobrePacoteInteiro =
+          form.data_checkin <= dataInicialPacote && form.data_checkout >= dataFinalPacote;
 
-        return !sobreposicaoPermitida;
+        return !cobrePacoteInteiro;
       });
 
       if (pacotesComSobreposicaoParcial.length > 0) {
-        const datasConflito = pacotesComSobreposicaoParcial.map(pacote => {
-          const dataInicial = new Date(pacote.data_inicial).toLocaleDateString('pt-BR');
-          const dataFinal = new Date(pacote.data_final).toLocaleDateString('pt-BR');
+        const datasConflito = pacotesComSobreposicaoParcial.map((pacote) => {
+          const dataInicial = formatarData(pacote.data_inicial);
+          const dataFinal = formatarData(pacote.data_final);
           return `${dataInicial} a ${dataFinal}`;
         }).join(', ');
-        
-        setErro(`Uma ou mais datas selecionadas não podem ser efetuadas. As seguintes datas fazem parte de um pacote: ${datasConflito}. Por favor, selecione outras datas ou o período completo do pacote.`);
+
+        setErro(
+          `As datas selecionadas precisam incluir o pacote completo. Período do pacote: ${datasConflito}.`
+        );
         setSalvando(false);
         return;
       }

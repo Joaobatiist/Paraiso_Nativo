@@ -8,77 +8,12 @@ import { acomodacaoService } from '@services/acomodacaoService';
 import { reservaService } from '@services/reservaService';
 import { perfilService } from '@services/perfilService';
 import { calcularReservaService } from '@services/calcularReservaService';
+import {calcularDiariaPorHospedes} from '@utils/calculadores'
 import './CadastroReserva.css';
+import {mascaraCPF, mascaraTelefone, apenasLetras} from '@utils/masks'
+import { validate } from '@utils/validators'
+import { Field, SelectField } from './ReservaFields';
 
-/* ── Field fora do componente pai (evita perda de foco) ── */
-const Field = ({ campo, label, type = 'text', placeholder, icon: Icon, required, autoComplete, value, onChange, error }) => (
-  <div className="cr-field">
-    <label className="cr-label">{label}{required && ' *'}</label>
-    <div className={`cr-input-wrap${error ? ' error' : ''}`}>
-      <Icon className="cr-icon-left" />
-      <input
-        type={type}
-        className="cr-input"
-        value={value}
-        onChange={e => onChange(campo, e.target.value)}
-        placeholder={placeholder}
-        autoComplete={autoComplete}
-        min={type === 'date' ? new Date().toISOString().split('T')[0] : undefined}
-      />
-    </div>
-    {error && <span className="cr-field-error"><FaExclamationTriangle />{error}</span>}
-  </div>
-);
-
-const SelectField = ({ campo, label, icon: Icon, required, value, onChange, error, children }) => (
-  <div className="cr-field">
-    <label className="cr-label">{label}{required && ' *'}</label>
-    <div className={`cr-input-wrap${error ? ' error' : ''}`}>
-      <Icon className="cr-icon-left" />
-      <select
-        className="cr-input cr-select"
-        value={value}
-        onChange={e => onChange(campo, e.target.value)}
-      >
-        {children}
-      </select>
-    </div>
-    {error && <span className="cr-field-error"><FaExclamationTriangle />{error}</span>}
-  </div>
-);
-
-/* ── Máscaras ── */
-const mascaraCPF = (v) => {
-  const d = v.replace(/\D/g, '').slice(0, 11);
-  if (d.length <= 3) return d;
-  if (d.length <= 6) return `${d.slice(0,3)}.${d.slice(3)}`;
-  if (d.length <= 9) return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6)}`;
-  return `${d.slice(0,3)}.${d.slice(3,6)}.${d.slice(6,9)}-${d.slice(9)}`;
-};
-
-const mascaraTelefone = (v) => {
-  const d = v.replace(/\D/g, '').slice(0, 11);
-  if (d.length <= 2) return d;
-  if (d.length <= 6) return `(${d.slice(0,2)}) ${d.slice(2)}`;
-  if (d.length <= 10) return `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
-  return `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`;
-};
-
-const apenasLetras = (v) => v.replace(/[^a-zA-ZÀ-ÿ\s]/g, '');
-
-/* ── Validação de CPF ── */
-const validarCPF = (cpf) => {
-  const d = cpf.replace(/\D/g, '');
-  if (d.length !== 11) return false;
-  if (/^(\d)\1{10}$/.test(d)) return false;
-  const calc = (len) => {
-    let sum = 0;
-    for (let i = 0; i < len; i++) sum += parseInt(d[i]) * (len + 1 - i);
-    const r = (sum * 10) % 11;
-    return r === 10 || r === 11 ? 0 : r;
-  };
-  return calc(9) === parseInt(d[9]) && calc(10) === parseInt(d[10]);
-};
 
 const estadoInicial = {
   nome: '', cpf: '', email: '', telefone: '',
@@ -108,52 +43,13 @@ const CadastroReserva = ({ onClose, onSuccess }) => {
     if (errors[campo]) setErrors(prev => ({ ...prev, [campo]: '' }));
   };
 
-  const validate = () => {
-    const errs = {};
-
-    // Nome
-    if (!form.nome.trim())
-      errs.nome = 'Nome é obrigatório';
-    else if (form.nome.trim().length < 3)
-      errs.nome = 'Mínimo de 3 caracteres';
-
-    // CPF
-    if (!form.cpf.trim())
-      errs.cpf = 'CPF é obrigatório';
-    else if (!validarCPF(form.cpf))
-      errs.cpf = 'CPF inválido';
-
-    // E-mail
-    if (!form.email.trim())
-      errs.email = 'E-mail é obrigatório';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-      errs.email = 'E-mail inválido';
-
-    // Telefone
-    if (!form.telefone.trim())
-      errs.telefone = 'Telefone é obrigatório';
-    else if (form.telefone.replace(/\D/g, '').length < 10)
-      errs.telefone = 'Telefone inválido (mín. 10 dígitos)';
-
-    // Acomodação
-    if (!form.id_acomodacao)
-      errs.id_acomodacao = 'Selecione uma acomodação';
-
-    // Datas
-    if (!form.data_checkin)
-      errs.data_checkin = 'Data de check-in é obrigatória';
-    if (!form.data_checkout)
-      errs.data_checkout = 'Data de check-out é obrigatória';
-    else if (form.data_checkin && form.data_checkout <= form.data_checkin)
-      errs.data_checkout = 'Check-out deve ser após o check-in';
-
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validate()) return;
+    const { valido, erros } = validate(form);
+    if (!valido) {
+      setErrors(erros);
+      return;
+    }
     setIsLoading(true);
     setErrors({});
     try {
@@ -163,7 +59,7 @@ const CadastroReserva = ({ onClose, onSuccess }) => {
         email: form.email.trim(),
         documento: form.cpf.trim(),
         telefone: form.telefone.trim(),
-        role: 'cliente',
+
       });
 
       const idUsuario = perfilData?.id ?? perfilData?.[0]?.id ?? null;
@@ -180,7 +76,8 @@ const CadastroReserva = ({ onClose, onSuccess }) => {
         form.id_acomodacao,
         form.data_checkin,
         form.data_checkout,
-        acomodacao.preco_diaria
+        acomodacao.preco_diaria,
+        form.num_hospedes
       );
 
       await reservaService.criarNovaReserva({

@@ -12,11 +12,11 @@ const GerenciarAcomodacoes = ({ onNovaCadastro }) => {
   const [erro, setErro] = useState('');
   const [editando, setEditando] = useState(null);
 
-  const carregar = useCallback(async () => {
+  const carregar = useCallback(async (force = false) => {
     setLoading(true);
     setErro('');
     try {
-      const data = await acomodacaoService.listarTodasComFotos();
+      const data = await acomodacaoService.listarTodasComFotos({ force });
       setAcomodacoes(data);
     } catch (e) {
       setErro('Erro ao carregar acomodações: ' + e.message);
@@ -118,7 +118,7 @@ const GerenciarAcomodacoes = ({ onNovaCadastro }) => {
         <h2 className="component-title">Acomodações</h2>
         <div className="acom-buttons">
           <button
-            onClick={carregar}
+            onClick={() => carregar(true)}
             className="btn-atualizar"
           >
             <FaSyncAlt /> Atualizar

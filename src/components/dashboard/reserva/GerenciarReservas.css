@@ -1,0 +1,241 @@
+.gerenciar-reservas {
+	padding: 20px;
+}
+
+.gerenciar-reservas .controls-row {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 20px;
+	flex-wrap: wrap;
+	align-items: center;
+}
+
+.gerenciar-reservas .filter-button {
+	padding: 6px 16px;
+	border-radius: 20px;
+	border: 2px solid var(--primary-blue);
+	background: transparent;
+	color: var(--primary-blue);
+	font-weight: 600;
+	cursor: pointer;
+	font-size: 13px;
+	text-transform: capitalize;
+}
+
+.gerenciar-reservas .filter-button.active {
+	background: var(--primary-blue);
+	color: white;
+}
+
+.gerenciar-reservas .btn-refresh-small {
+	margin-left: auto;
+	padding: 6px 16px;
+	border-radius: 20px;
+	border: 1px solid var(--gray-300);
+	background: var(--gray-100);
+	color: var(--gray-700);
+	cursor: pointer;
+	font-size: 13px;
+}
+
+.gerenciar-reservas .btn-reservar-more {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 18px;
+	border-radius: 20px;
+	border: none;
+	background: linear-gradient(135deg, #004AAD, #1a5fc0);
+	color: white;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 600;
+	box-shadow: 0 3px 10px rgba(0,74,173,0.28);
+}
+
+.gerenciar-reservas .btn-nova-reserva {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 18px;
+	border-radius: 20px;
+	border: none;
+	background: linear-gradient(135deg, #1a5fc0, #1a5fc0);
+	color: white;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 600;
+	box-shadow: 0 3px 10px rgba(5, 85, 150, 0.28);
+}
+
+.gerenciar-reservas .guest-info {
+	display: grid;
+	gap: 2px;
+}
+
+.gerenciar-reservas .guest-email {
+	font-size: 12px;
+	color: var(--gray-500);
+}
+
+.gerenciar-reservas .readonly-text {
+	color: var(--gray-500);
+	font-size: 13px;
+}
+
+.gerenciar-reservas .loading-text {
+	text-align: center;
+	padding: 32px;
+	color: var(--gray-500);
+}
+
+.gerenciar-reservas .action-buttons {
+	display: flex;
+	gap: 2px;
+}
+
+.gerenciar-reservas .edit-button,
+.gerenciar-reservas .delete-button,
+.gerenciar-reservas .view-button {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 4px;
+	font-size: 14px;
+}
+
+.gerenciar-reservas .edit-button { color: #10b981; }
+.gerenciar-reservas .delete-button { color: #ef4444; }
+.gerenciar-reservas .view-button {color: #2563eb;}
+
+.gerenciar-reservas .status-badge {
+	display: inline-block;
+	padding: 6px 10px;
+	border-radius: 999px;
+	font-size: 13px;
+	text-transform: capitalize;
+	background: var(--gray-100);
+	color: var(--gray-700);
+}
+
+.gerenciar-reservas .status-badge.confirmada { background: #d1fae5; color: #065f46; }
+.gerenciar-reservas .status-badge.pendente { background: #fef3c7; color: #92400e; }
+.gerenciar-reservas .status-badge.cancelada { background: #fee2e2; color: #991b1b; }
+
+.gerenciar-reservas .view-button {
+	background: none;
+	border: none;
+	cursor: pointer;
+	padding: 6px;
+	font-size: 14px;
+	color: #2563eb;
+}
+
+.gerenciar-reservas .modal-overlay {
+	position: fixed;
+	inset: 0;
+	background-color: rgba(0,0,0,0.5);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 1000;
+}
+
+.gerenciar-reservas .modal-content {
+	background: #fff;
+	padding: 20px;
+	border-radius: 8px;
+	min-width: 320px;
+	max-width: 600px;
+	width: 90%;
+}
+
+.gerenciar-reservas .modal-title {
+	margin-top: 0;
+	border-bottom: 1px solid #e5e7eb;
+	padding-bottom: 10px;
+}
+
+.gerenciar-reservas .modal-body {
+	margin-top: 12px;
+	line-height: 1.6;
+}
+
+.gerenciar-reservas .btn-fechar {
+	margin-top: 18px;
+	width: 100%;
+	padding: 10px;
+	background-color: #2563eb;
+	color: #fff;
+	border: none;
+	border-radius: 5px;
+	cursor: pointer;
+	font-size: 1rem;
+}
+
+.gerenciar-reservas .pagination-container {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	margin-top: 18px;
+	padding: 0 0 4px;
+}
+
+.gerenciar-reservas .pagination-summary {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	gap: 4px;
+	min-width: 180px;
+	color: var(--gray-700);
+}
+
+
+.gerenciar-reservas .pagination-button {
+	border: none;
+	border-radius: 14px;
+	padding: 12px 16px;
+	cursor: pointer;
+	font-size: 15px;
+	font-weight: 700;
+	transition: all 0.2s ease;
+	min-width: 132px;
+	box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+}
+
+.gerenciar-reservas .pagination-prev {
+	background: #e6edf7;
+	color: #6b7280;
+}
+
+.gerenciar-reservas .pagination-next {
+	background: var(--primary-blue);
+	color: #fff;
+}
+
+.gerenciar-reservas .pagination-button:hover:not(:disabled) {
+	opacity: 0.95;
+	transform: translateY(-1px);
+	box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
+}
+
+.gerenciar-reservas .pagination-button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	transform: none;
+	box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+}
+
+.gerenciar-reservas .pagination-summary strong {
+	font-size: 18px;
+	color: #1f2937;
+}
+
+.gerenciar-reservas .pagination-summary span {
+	font-size: 14px;
+	color: #6b7280;
+}
+

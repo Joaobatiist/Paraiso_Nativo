@@ -63,7 +63,7 @@
 .cr-header-badge {
   width: 46px;
   height: 46px;
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #2563eb 100%);
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -236,13 +236,13 @@
 
 .cr-input:focus {
   outline: none;
-  border-color: #059669;
+  border-color: #2563eb;
   background: #ffffff;
   box-shadow: 0 0 0 3.5px rgba(5, 150, 105, 0.12);
 }
 
 .cr-input-wrap:focus-within .cr-icon-left {
-  color: #059669;
+  color: #2563eb;
 }
 
 /* ── Select ── */
@@ -302,9 +302,9 @@ input[type="date"].cr-input::-webkit-calendar-picker-indicator {
 
 .cr-textarea:focus {
   outline: none;
-  border-color: #059669;
+  border-color: #2563eb;
   background: #ffffff;
-  box-shadow: 0 0 0 3.5px rgba(5, 150, 105, 0.12);
+  box-shadow: 0 0 0 3.5px rgba(5, 51, 150, 0.12);
 }
 
 /* Estado de erro */
@@ -369,7 +369,7 @@ input[type="date"].cr-input::-webkit-calendar-picker-indicator {
   justify-content: center;
   gap: 8px;
   padding: 12px 24px;
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #2563eb 100%);
   color: #ffffff;
   border: none;
   border-radius: 12px;
@@ -378,19 +378,19 @@ input[type="date"].cr-input::-webkit-calendar-picker-indicator {
   font-weight: 600;
   cursor: pointer;
   letter-spacing: 0.01em;
-  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.30);
+  box-shadow: 0 4px 14px rgba(5, 56, 150, 0.3);
   transition: all 0.2s ease;
 }
 
 .cr-btn-submit:hover:not(:disabled) {
-  background: linear-gradient(135deg, #06a87a 0%, #059669 100%);
-  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.40);
+  background: linear-gradient(135deg, #2563eb 0%, #2563eb 100%);
+  box-shadow: 0 6px 20px rgba(5, 63, 150, 0.4);
   transform: translateY(-1px);
 }
 
 .cr-btn-submit:active:not(:disabled) {
   transform: translateY(0);
-  box-shadow: 0 3px 10px rgba(5, 150, 105, 0.22);
+  box-shadow: 0 3px 10px rgba(5, 63, 150, 0.22);
 }
 
 .cr-btn-submit:disabled {
@@ -412,15 +412,15 @@ input[type="date"].cr-input::-webkit-calendar-picker-indicator {
 .cr-success-icon {
   width: 72px;
   height: 72px;
-  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  background: linear-gradient(135deg, #8aa0cf, #2563eb);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 30px;
-  color: #059669;
+  color: #2563eb;
   margin-bottom: 20px;
-  box-shadow: 0 8px 24px rgba(5, 150, 105, 0.18);
+  box-shadow: 0 8px 24px rgba(5, 104, 150, 0.18);
 }
 
 .cr-success-title {

@@ -72,6 +72,12 @@ export default function Calendario() {
     });
   };
 
+  const isDataPassada = (data) => {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    return data < hoje;
+  };
+
   // Função para verificar se uma data está em um intervalo (em qualquer mês do intervalo)
   const estaNoIntervalo = (dia, mesRenderizado) => {
     if (!dataInicio || !dataFim) return false;
@@ -96,6 +102,8 @@ export default function Calendario() {
   // Função para selecionar data
   const selecionarData = (dia, mesRenderizado) => {
     const dataSelecionada = new Date(mesRenderizado.getFullYear(), mesRenderizado.getMonth(), dia);
+
+    if (isDataPassada(dataSelecionada)) return;
     
     if (!dataInicio) {
       setDataInicio(dataSelecionada);
@@ -221,8 +229,10 @@ export default function Calendario() {
                 ehDataSelecionada(dia, data) ? 'selecionado' : ''
               } ${
                 estaNoIntervalo(dia, data) ? 'intervalo' : ''
+              } ${
+                dia !== null && isDataPassada(new Date(data.getFullYear(), data.getMonth(), dia)) ? 'passado' : ''
               }`}
-              onClick={() => dia !== null && selecionarData(dia, data)}
+              onClick={() => dia !== null && !isDataPassada(new Date(data.getFullYear(), data.getMonth(), dia)) && selecionarData(dia, data)}
             >
               {dia}
             </div>

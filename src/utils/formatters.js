@@ -23,3 +23,9 @@ export const forcaSenha = (senha) => {
   if (pontos <= 3) return { nivel: 2, texto: 'Média',  cor: '#f59e0b' };
   return               { nivel: 3, texto: 'Forte',  cor: '#10b981' };
 };
+
+export const formatarData = (d) => {
+  if (!d) return '—';
+  const [ano, mes, dia] = d.split('T')[0].split('-');
+  return `${dia}/${mes}/${ano}`;
+};

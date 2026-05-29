@@ -127,6 +127,87 @@
   color: var(--gray-800);
 }
 
+.gerenciar-funcionarios .card-acoes {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+}
+
+.gerenciar-funcionarios .card-action-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+}
+
+.gerenciar-funcionarios .card-view-button {
+  color: #007bff;
+}
+
+.gerenciar-funcionarios .card-delete-button {
+  color: #dc3545;
+}
+
+.gerenciar-funcionarios .btn-icon {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.gerenciar-funcionarios .btn-view {
+  color: #007bff;
+  margin-left: 10px;
+}
+
+
+
+.gerenciar-funcionarios .modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.gerenciar-funcionarios .modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  min-width: 300px;
+  max-width: 500px;
+  width: 90%;
+}
+
+.gerenciar-funcionarios .modal-title {
+  margin-top: 0;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 10px;
+}
+
+.gerenciar-funcionarios .modal-body {
+  line-height: 1.6;
+  margin-top: 15px;
+}
+
+.gerenciar-funcionarios .btn-fechar {
+  margin-top: 20px;
+  width: 100%;
+  padding: 10px;
+  background-color: #004AAD;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
 /* Empty State */
 .gerenciar-funcionarios .empty-state {
   text-align: center;

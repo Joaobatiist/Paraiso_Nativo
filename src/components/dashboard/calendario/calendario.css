@@ -4,7 +4,7 @@
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
   padding: 2rem;
-  background: linear-gradient(135deg, #f5f3f0 0%, #fdfcfb 100%);
+ 
   border-radius: 16px;
   margin: 1rem 0;
   position: relative;
@@ -17,9 +17,14 @@
   background: white;
   border-radius: 12px;
   padding: 1.5rem;
+
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
-
+.calendario-dias .dia.passado {
+  color: #9ca3af;
+  background: #f3f4f6;
+  cursor: not-allowed;
+   }
 /* Navegação */
 .calendario-navegacao {
   display: flex;
@@ -40,7 +45,7 @@
 }
 
 .btn-nav {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: linear-gradient(135deg, #004AAD 0%, #004AAD 100%);
   border: none;
   color: white;
   width: 36px;
@@ -56,7 +61,7 @@
 
 .btn-nav:hover {
   transform: scale(1.08);
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+  box-shadow: 0 4px 12px rgba(150, 128, 5, 0.3);
 }
 
 .btn-nav:active {
@@ -131,8 +136,8 @@
 
 .dia:hover:not(.vazio) {
   background: #f0fdf4;
-  border-color: #059669;
-  color: #059669;
+  border-color: #FFB347;
+  color: #FFB347;
   font-weight: 600;
 }
 
@@ -145,30 +150,30 @@
 
 /* Dia Selecionado (Início ou Fim) */
 .dia.selecionado {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: linear-gradient(135deg, #004AAD 0%, #004AAD 100%);
   color: white;
-  border-color: #059669;
+  border-color: #004AAD;
   font-weight: 600;
-  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.4);
+  box-shadow: 0 2px 6px rgba(150, 128, 5, 0.4);
 }
 
 /* Dias no Intervalo */
 .dia.intervalo {
   background: #d1fae5;
-  color: #065f46;
+  color: #004AAD;
   border-color: #a7f3d0;
   font-weight: 500;
 }
 
 .dia.intervalo.selecionado {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: linear-gradient(135deg, #004AAD 0%, #004AAD 100%);
   color: white;
 }
 
 /* Informações de Seleção */
 .selecao-info {
   background: #f0fdf4;
-  border: 1px solid #d1fae5;
+  border: 1px solid #d1edfa;
   border-radius: 8px;
   padding: 1rem;
   margin-top: 1rem;
@@ -187,7 +192,7 @@
 }
 
 .data-selecionada strong {
-  color: #059669;
+  color: #004AAD;
 }
 
 /* Container da Direita */
@@ -245,7 +250,7 @@
 .form-group textarea:focus,
 .form-group select:focus {
   outline: none;
-  border-color: #059669;
+  border-color: #004AAD;
   box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
 }
 
@@ -284,13 +289,13 @@
 }
 
 .btn-salvar {
-  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  background: linear-gradient(135deg, #004AAD 0%, #004AAD 100%);
   color: white;
 }
 
 .btn-salvar:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+  box-shadow: 0 4px 12px rgba(150, 135, 5, 0.3);
 }
 
 .btn-salvar:disabled {
@@ -348,8 +353,8 @@
 }
 
 .pacote-card:hover {
-  border-color: #059669;
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15);
+  border-color: #004AAD;
+  box-shadow: 0 4px 12px rgba(150, 140, 5, 0.15);
 }
 
 .pacote-header {
@@ -369,7 +374,7 @@
 .pacote-acomodacao {
   margin: 0.25rem 0 0 0;
   font-size: 0.8rem;
-  color: #059669;
+  color: #004AAD;
   font-weight: 500;
 }
 

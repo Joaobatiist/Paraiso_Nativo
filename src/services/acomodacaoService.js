@@ -2,10 +2,10 @@ import { supabaseService } from "./supabaseService";
 
 export const acomodacaoService = {
   // Listar todos os quartos com a galeria de fotos (JOIN)
-  async listarTodasComFotos() {
+  async listarTodasComFotos(options = {}) {
     try {
       // O '*, galeria_fotos(*)' traz o quarto e todas as fotos dele de uma vez
-      return await supabaseService.getAll('acomodacoes', '*, galeria_fotos(*)');
+      return await supabaseService.getAll('acomodacoes', '*, galeria_fotos(*)', options);
     } catch (error) {
       throw error;
     }

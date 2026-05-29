@@ -15,7 +15,8 @@ export const validarEmail = (email) => {
 };
 
 export const validarTelefone = (telefone) => {
-  return regexTelefone.test(telefone.replace(/\s/g, ''));
+  const digits = telefone.replace(/\D/g, '');
+  return digits.length === 10 || digits.length === 11;
 };
 
 export const validarCPF = (cpf) => {
@@ -29,6 +30,34 @@ export const validarCPF = (cpf) => {
     return r === 10 || r === 11 ? 0 : r;
   };
   return calc(9) === parseInt(d[9]) && calc(10) === parseInt(d[10]);
+};
+
+export const validarCNPJ = (cnpj) => {
+  const d = cnpj.replace(/\D/g, '');
+  if (d.length !== 14) return false;
+  if (/^(\d)\1{13}$/.test(d)) return false;
+
+  const calc = (len, pesos) => {
+    let sum = 0;
+    for (let i = 0; i < len; i++) sum += parseInt(d[i]) * pesos[i];
+    const r = sum % 11;
+    return r < 2 ? 0 : 11 - r;
+  };
+
+  const pesos1 = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  const pesos2 = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+
+  const digito1 = calc(12, pesos1);
+  const digito2 = calc(13, pesos2);
+
+  return digito1 === parseInt(d[12]) && digito2 === parseInt(d[13]);
+};
+
+export const validarDocumento = (documento) => {
+  const d = documento.replace(/\D/g, '');
+  if (d.length === 11) return validarCPF(documento);
+  if (d.length === 14) return validarCNPJ(documento);
+  return false;
 };
 
 export const validarCEP = (cep) => {
@@ -89,9 +118,9 @@ export const validarReservaHome = (dados) => {
     criarValidador('email', !perfilForm.email.trim(), 'Informe seu e-mail.'),
     criarValidador('email', perfilForm.email.trim() && !validarEmail(perfilForm.email), 'E-mail inválido.'),
     criarValidador('telefone', !perfilForm.telefone.trim(), 'Informe seu telefone'),
-    criarValidador('telefone',perfilForm.telefone.trim() && !validarTelefone(perfilForm.telefone), 'Telefone inválido, deve conter (DD) XXXX-XXXXX'),
+    criarValidador('telefone',perfilForm.telefone.trim() && !validarTelefone(perfilForm.telefone), 'Telefone inválido, deve ter 10 ou 11 dígitos'),
     criarValidador('documento',!perfilForm.documento.trim(), 'Informe seu cpf' ),
-    criarValidador('documento', perfilForm.documento.trim() && !validarCPF(perfilForm.documento), 'Cpf inválido, deve conter xxx-xxx-xxx-xx' ),
+    criarValidador('documento', perfilForm.documento.trim() && !validarDocumento(perfilForm.documento), 'CPF ou CNPJ inválido' ),
     criarValidador('data_checkin', !form.data_checkin, 'Selecione a data de check-in.'),
     criarValidador('data_checkout', !form.data_checkout, 'Selecione a data de check-out.'),
     criarValidador('data_checkout', form.data_checkin && form.data_checkout <= form.data_checkin, 'A data de check-out deve ser depois do check-in.'),
@@ -100,7 +129,7 @@ export const validarReservaHome = (dados) => {
   ];
 
   const erros = {};
-  validadores.forEach(({ campo, condicao, mensagem }) => {
+  validadores.map(({ campo, condicao, mensagem }) => {
     if (condicao) erros[campo] = mensagem;
   });
 
@@ -139,3 +168,47 @@ export const validarCadastroFuncionario = (form) => {
     erros,
   };
 };
+export const validate = (form) => {
+   const errs = {};
+
+    // Nome
+    if (!form.nome.trim())
+      errs.nome = 'Nome é obrigatório';
+    else if (form.nome.trim().length < 3)
+      errs.nome = 'Mínimo de 3 caracteres';
+
+    // CPF
+    if (!form.cpf.trim())
+      errs.cpf = 'CPF é obrigatório';
+    else if (!validarCPF(form.cpf))
+      errs.cpf = 'CPF inválido';
+
+    // E-mail
+    if (!form.email.trim())
+      errs.email = 'E-mail é obrigatório';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+      errs.email = 'E-mail inválido';
+
+    // Telefone
+    if (!form.telefone.trim())
+      errs.telefone = 'Telefone é obrigatório';
+    else if (form.telefone.replace(/\D/g, '').length < 10)
+      errs.telefone = 'Telefone inválido (mín. 10 dígitos)';
+
+    // Acomodação
+    if (!form.id_acomodacao)
+      errs.id_acomodacao = 'Selecione uma acomodação';
+
+    // Datas
+    if (!form.data_checkin)
+      errs.data_checkin = 'Data de check-in é obrigatória';
+    if (!form.data_checkout)
+      errs.data_checkout = 'Data de check-out é obrigatória';
+    else if (form.data_checkin && form.data_checkout <= form.data_checkin)
+      errs.data_checkout = 'Check-out deve ser após o check-in';
+
+    return {
+      valido: Object.keys(errs).length === 0,
+      erros: errs,
+    };
+  };

@@ -1,32 +1,32 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { reservaService } from '@services/reservaService';
 import CadastroReserva from './CadastroReserva';
-import { FaCheck, FaTimes, FaSyncAlt, FaExclamationTriangle, FaPlus } from 'react-icons/fa';
-import DatePicker from "react-datepicker";
+import { FaCheck, FaTimes, FaSyncAlt, FaExclamationTriangle, FaPlus, FaEye } from 'react-icons/fa';
 import "react-datepicker/dist/react-datepicker.css";
-import { eachDayOfInterval, parseISO } from 'date-fns';
+import './GerenciarReservas.css';
+import {formatarData} from '@utils/formatters'
+import {ordenarReservasPorData} from '@utils/time'
 
-const formatarData = (d) => {
-  if (!d) return '—';
-  const [ano, mes, dia] = d.split('T')[0].split('-');
-  return `${dia}/${mes}/${ano}`;
-};
 
 const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
   const [reservas, setReservas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState('');
   const [filtro, setFiltro] = useState('todas');
+  const [paginaAtual, setPaginaAtual] = useState(1);
+  const itensPorPagina = 10;
   const [mostrarCadastro, setMostrarCadastro] = useState(false);
+  const [modalVisualizarAberto, setModalVisualizarAberto] = useState(false);
+  const [reservaSelecionada, setReservaSelecionada] = useState(null);
 
-  const carregar = useCallback(async () => {
+  const carregar = useCallback(async (force = false) => {
     setLoading(true);
     setErro('');
     try {
       const data = modoCliente && userId
-        ? await reservaService.listarPorUsuario(userId)
-        : await reservaService.listarTodas();
-      setReservas(data);
+        ? await reservaService.listarPorUsuario(userId, { force })
+        : await reservaService.listarTodas({ force });
+      setReservas(ordenarReservasPorData(data || []));
     } catch (e) {
       setErro('Erro ao carregar reservas: ' + e.message);
     } finally {
@@ -35,6 +35,10 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
   }, [modoCliente, userId]);
 
   useEffect(() => { carregar(); }, [carregar]);
+
+  useEffect(() => {
+    setPaginaAtual(1);
+  }, [filtro, reservas.length]);
 
   const handleMudarStatus = async (id, novoStatus) => {
     try {
@@ -52,17 +56,36 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
     await handleMudarStatus(id, 'cancelada');
   };
 
+  const reservasOrdenadas = ordenarReservasPorData(reservas);
+
   const reservasFiltradas = filtro === 'todas'
-    ? reservas
-    : reservas.filter(r => r.status_reserva === filtro);
+    ? reservasOrdenadas
+    : reservasOrdenadas.filter(r => r.status_reserva === filtro);
+
+  const totalPaginas = Math.max(1, Math.ceil(reservasFiltradas.length / itensPorPagina));
+  const paginaValida = Math.min(paginaAtual, totalPaginas);
+  const indiceInicial = (paginaValida - 1) * itensPorPagina;
+  const reservasNaPagina = reservasFiltradas.slice(indiceInicial, indiceInicial + itensPorPagina);
+
+  const irParaPagina = (pagina) => {
+    const paginaNormalizada = Math.min(Math.max(pagina, 1), totalPaginas);
+    setPaginaAtual(paginaNormalizada);
+  };
+
+  
+
+  const handleVerDetalhes = (reserva) => {
+    setReservaSelecionada(reserva);
+    setModalVisualizarAberto(true);
+  };
 
   const ReservaRow = ({ r }) => (
     <tr>
       <td>
-        <div style={{ display: 'grid', gap: '2px' }}>
+        <div className="guest-info">
           <strong>{r.perfis?.nome || '—'}</strong>
           {!modoCliente && r.perfis?.email && (
-            <span style={{ fontSize: '12px', color: 'var(--gray-500)' }}>{r.perfis.email}</span>
+            <span className="guest-email">{r.perfis.email}</span>
           )}
         </div>
       </td>
@@ -76,9 +99,16 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
       </td>
       <td>
         {modoCliente ? (
-          <span style={{ color: 'var(--gray-500)', fontSize: '13px' }}>Somente visualização</span>
+          <span className="readonly-text">Somente visualização</span>
         ) : (
           <div className="action-buttons">
+            <button
+              className="view-button"
+              title="Ver detalhes"
+              onClick={() => handleVerDetalhes(r)}
+            >
+              <FaEye />
+            </button>
             {r.status_reserva !== 'confirmada' && (
               <button
                 className="edit-button"
@@ -133,6 +163,7 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
     </div>
   );
 
+
   return (
     <div className="gerenciar-reservas">
       <h2 className="component-title">{modoCliente ? 'Minhas Reservas' : 'Reservas'}</h2>
@@ -144,78 +175,30 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
         />
       )}
 
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+      <div className="controls-row">
         {['todas', 'confirmada', 'pendente', 'cancelada'].map(f => (
           <button
             key={f}
             onClick={() => setFiltro(f)}
-            style={{
-              padding: '6px 16px',
-              borderRadius: '20px',
-              border: '2px solid var(--primary-blue)',
-              background: filtro === f ? 'var(--primary-blue)' : 'transparent',
-              color: filtro === f ? 'white' : 'var(--primary-blue)',
-              fontWeight: 600,
-              cursor: 'pointer',
-              fontSize: '13px',
-              textTransform: 'capitalize',
-            }}
+            className={`filter-button ${filtro === f ? 'active' : ''}`}
           >
             {f === 'todas' ? 'Todas' : f}
           </button>
         ))}
-        <button
-          onClick={carregar}
-          style={{
-            marginLeft: 'auto',
-            padding: '6px 16px',
-            borderRadius: '20px',
-            border: '1px solid var(--gray-300)',
-            background: 'var(--gray-100)',
-            color: 'var(--gray-700)',
-            cursor: 'pointer',
-            fontSize: '13px',
-          }}
-        >
+        <button onClick={() => carregar(true)} className="btn-refresh-small">
           <FaSyncAlt /> Atualizar
         </button>
         {modoCliente ? (
           <button
             onClick={() => { window.location.href = '/reserva'; }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '6px 18px',
-              borderRadius: '20px',
-              border: 'none',
-              background: 'linear-gradient(135deg, #004AAD, #1a5fc0)',
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: 600,
-              boxShadow: '0 3px 10px rgba(0,74,173,0.28)',
-            }}
+            className="btn-reservar-more"
           >
             <FaPlus /> Reservar mais
           </button>
         ) : (
           <button
             onClick={() => setMostrarCadastro(true)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '6px 18px',
-              borderRadius: '20px',
-              border: 'none',
-              background: 'linear-gradient(135deg, #059669, #047857)',
-              color: 'white',
-              cursor: 'pointer',
-              fontSize: '13px',
-              fontWeight: 600,
-              boxShadow: '0 3px 10px rgba(5,150,105,0.28)',
-            }}
+            className="btn-nova-reserva"
           >
             <FaPlus /> Nova Reserva
           </button>
@@ -225,7 +208,7 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
       {erro && <div className="error-message"><span className="error-icon"><FaExclamationTriangle /></span>{erro}</div>}
 
       {loading ? (
-        <p style={{ textAlign: 'center', padding: '32px', color: 'var(--gray-500)' }}>Carregando...</p>
+        <p className="loading-text">Carregando...</p>
       ) : reservasFiltradas.length === 0 ? (
         <div className="empty-state">
           <p>Nenhuma reserva encontrada.</p>
@@ -246,16 +229,63 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
                 </tr>
               </thead>
               <tbody>
-                {reservasFiltradas.map(r => <ReservaRow key={r.id} r={r} />)}
+                {reservasNaPagina.map(r => <ReservaRow key={r.id} r={r} />)}
               </tbody>
             </table>
           </div>
 
           {/* Cards mobile */}
           <div className="dash-cards-mobile">
-            {reservasFiltradas.map(r => <ReservaCard key={r.id} r={r} />)}
+            {reservasNaPagina.map(r => <ReservaCard key={r.id} r={r} />)}
           </div>
+
+          {reservasFiltradas.length > itensPorPagina && (
+            <div className="pagination-container">
+              <button
+                className="pagination-button pagination-prev"
+                onClick={() => irParaPagina(paginaAtual - 1)}
+                disabled={paginaAtual === 1}
+              >
+                ← Anterior
+              </button>
+
+              <div className="pagination-summary">
+                <strong>Página {paginaValida} de {totalPaginas}</strong>
+                <span>({reservasFiltradas.length} reservas)</span>
+              </div>
+
+              <button
+                className="pagination-button pagination-next"
+                onClick={() => irParaPagina(paginaAtual + 1)}
+                disabled={paginaAtual === totalPaginas}
+              >
+                Próximo →
+              </button>
+            </div>
+          )}
         </>
+      )}
+
+      {/* Modal de Visualização de Reserva */}
+      {modalVisualizarAberto && reservaSelecionada && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3 className="modal-title">Detalhes da Reserva</h3>
+            <div className="modal-body">
+              <p><strong>Nome:</strong> {reservaSelecionada.perfis?.nome || '—'}</p>
+              <p><strong>Documento:</strong> {reservaSelecionada.perfis?.documento || '—'}</p>
+              <p><strong>E-mail:</strong> {reservaSelecionada.perfis?.email || '—'}</p>
+              <p><strong>Telefone:</strong> {reservaSelecionada.perfis?.telefone || '—'}</p>
+              <p><strong>Acomodação:</strong> {reservaSelecionada.acomodacoes?.nome || '—'}</p>
+              <p><strong>Check-in:</strong> {formatarData(reservaSelecionada.data_checkin)}</p>
+              <p><strong>Check-out:</strong> {formatarData(reservaSelecionada.data_checkout)}</p>
+              <p><strong>Status:</strong> {reservaSelecionada.status_reserva || '—'}</p>
+              <p><strong>Valor total:</strong> {reservaSelecionada.valor_total ?? reservaSelecionada.valor ?? reservaSelecionada.total ?? '—'}</p>
+              <p><strong>Criado em:</strong> {formatarData(reservaSelecionada.criado_em || '—')}</p>
+            </div>
+            <button className="btn-fechar" onClick={() => setModalVisualizarAberto(false)}>Fechar</button>
+          </div>
+        </div>
       )}
     </div>
   );
