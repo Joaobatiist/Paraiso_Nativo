@@ -1,10 +1,10 @@
 .header-container {
   position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
   z-index: 1000;
 
-  /* Grid de 3 colunas */
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
@@ -12,23 +12,30 @@
 
   padding: 10px 28px;
   width: min(90vw, 1200px);
+  border-radius: 60px;
+  box-shadow: 0 4px 28px rgba(0, 74, 173, 0.08);
+  transition: top 0.6s, bottom 0.6s, opacity 0.6s;
+  /* backdrop-filter movido para ::before — evita criar containing block para position:fixed filhos */
+}
+
+.header-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border-radius: 60px;
   border: 1px solid rgba(0, 74, 173, 0.10);
-  box-shadow: 0 4px 28px rgba(0, 74, 173, 0.08);
-  transition: top 0.6s, bottom 0.6s, opacity 0.6s, transform 0.6s;
-  will-change: transform, top, bottom, opacity;
+  z-index: -1;
+  pointer-events: none;
 }
 
 .header-bottom { bottom: 18px; top: auto; }
 .header-top    { top: 14px;   bottom: auto; }
-.header-hidden {
-  opacity: 0;
-  pointer-events: none;
-  transform: translateX(-50%) translateY(20px);
-}
+
+.header-top.header-hidden    { top: -120px; opacity: 0; pointer-events: none; }
+.header-bottom.header-hidden { bottom: -120px; opacity: 0; pointer-events: none; }
 
 /* ============================================ */
 /* LOGO                                          */
@@ -74,7 +81,7 @@
   padding: 0;
 }
 
-.nav-links a {
+.nav-drawer-links a {
   font-family: 'Inter', sans-serif;
   font-size: 0.88rem;
   font-weight: 500;
@@ -85,13 +92,24 @@
   transition: color 0.3s, transform 0.3s;
 }
 
-.nav-links a:hover {
+.nav-drawer-links a:hover {
   color: #004AAD;
   transform: translateY(-1px);
 }
 
-/* Bot�o de fechar dentro do drawer � oculto no desktop */
+/* Estrutura interna do drawer — oculta no desktop */
 .nav-close-btn { display: none; }
+.nav-drawer-header { display: none; }
+.nav-drawer-footer { display: none; }
+
+/* No desktop, links dentro do nav-drawer-links aparecem normalmente */
+.nav-drawer-links {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-direction: row;
+  padding: 0;
+}
 
 /* ============================================ */
 /* ACTIONS (login + hamburger)                  */
@@ -103,7 +121,7 @@
   flex-shrink: 0;
 }
 
-/* Bot�o de login */
+/* Botão de login */
 .login-btn {
   display: inline-flex;
   align-items: center;
@@ -128,7 +146,7 @@
   box-shadow: 0 6px 20px rgba(255, 179, 71, 0.40);
 }
 
-/* Hamburger � oculto no desktop */
+/* Hamburger — oculto no desktop */
 .menu-toggle {
   display: none;
   align-items: center;
@@ -145,13 +163,13 @@
 
 .menu-toggle:hover { transform: scale(1.1); }
 
-/* Backdrop escuro (mobile) */
+/* Backdrop escuro (mobile) — z-index 999 para ficar abaixo do header (1000) */
 .nav-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.38);
-  z-index: 1000;
-  animation: fadeIn 0.2s ease;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 999;
+  animation: fadeIn 0.25s ease;
 }
 
 @keyframes fadeIn {
@@ -160,7 +178,7 @@
 }
 
 /* ============================================ */
-/* RESPONSIVE � Tablet grande (= 1023px)        */
+/* RESPONSIVE — Tablet grande (≤ 1023px)        */
 /* ============================================ */
 @media (max-width: 1023px) {
   .header-container {
@@ -169,8 +187,8 @@
     padding: 10px 22px;
   }
 
-  .nav-links { gap: 20px; }
-  .nav-links a { font-size: 0.82rem; }
+  .nav-drawer-links { gap: 20px; }
+  .nav-drawer-links a { font-size: 0.82rem; }
 
   .login-btn-text { display: none; }
   .login-btn { padding: 8px 12px; }
@@ -178,11 +196,12 @@
 }
 
 /* ============================================ */
-/* RESPONSIVE � Mobile (= 768px) drawer        */
+/* RESPONSIVE — Mobile (≤ 768px) drawer         */
 /* ============================================ */
 @media (max-width: 768px) {
   .header-container {
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto auto;
+    justify-content: space-between;
     width: calc(100vw - 32px);
     padding: 10px 18px;
     border-radius: 24px;
@@ -190,58 +209,126 @@
 
   .menu-toggle { display: flex; }
 
+  /* Nav sai do grid e vira drawer fixo */
   .nav-links {
     position: fixed;
     top: 0;
     right: 0;
     bottom: 0;
-    width: min(72vw, 290px);
+    width: min(78vw, 300px);
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: stretch;
-    gap: 6px;
+    gap: 0;
     background: #ffffff;
-    padding: 60px 24px 40px;
-    box-shadow: -8px 0 40px rgba(0, 0, 0, 0.14);
-    transform: translateX(100%);
-    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0;
+    box-shadow: -6px 0 40px rgba(0, 0, 0, 0.18);
+    transform: translateX(110%);
+    transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1001;
     overflow-y: auto;
+    pointer-events: none;
   }
 
-  .nav-links.nav-open { transform: translateX(0); }
+  .nav-links.nav-open {
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+
+  /* Cabeçalho do drawer com logo + botão fechar */
+  .nav-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    border-bottom: 1px solid rgba(0, 74, 173, 0.10);
+    background: #f8faff;
+    flex-shrink: 0;
+  }
+
+  .nav-drawer-brand {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+  }
+
+  .nav-drawer-logo {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+
+  .nav-drawer-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #004AAD;
+  }
 
   .nav-close-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    position: absolute;
-    top: 18px;
-    right: 18px;
-    background: none;
+    width: 34px;
+    height: 34px;
+    background: rgba(0, 74, 173, 0.08);
     border: none;
-    font-size: 1.3rem;
-    color: #4a5568;
-    cursor: pointer;
-    padding: 4px;
-    transition: color 0.3s;
-  }
-
-  .nav-close-btn:hover { color: #004AAD; }
-
-  .nav-links a {
+    border-radius: 50%;
     font-size: 1rem;
-    padding: 13px 18px;
-    border-radius: 12px;
-    border: 1px solid transparent;
-    text-align: left;
+    color: #004AAD;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+    flex-shrink: 0;
   }
 
-  .nav-links a:hover {
-    background: #f0f4ff;
-    border-color: rgba(0, 74, 173, 0.12);
-    transform: none;
+  .nav-close-btn:hover {
+    background: #004AAD;
+    color: #ffffff;
+  }
+
+  /* Lista de links dentro do drawer */
+  .nav-drawer-links {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 12px;
+    gap: 2px;
+    flex: 1;
+  }
+
+  .nav-links .nav-drawer-links a {
+    font-size: 0.97rem;
+    font-weight: 500;
+    color: #374151;
+    padding: 13px 16px;
+    border-radius: 10px;
+    text-align: left;
+    white-space: normal;
+    letter-spacing: 0.01em;
+    transition: background 0.2s, color 0.2s;
+    border: none;
+  }
+
+  .nav-links .nav-drawer-links a:hover {
+    background: #eff4ff;
     color: #004AAD;
+    transform: none;
+  }
+
+  /* Rodapé do drawer */
+  .nav-drawer-footer {
+    display: block;
+    padding: 16px 20px;
+    border-top: 1px solid rgba(0, 74, 173, 0.08);
+    flex-shrink: 0;
+  }
+
+  .nav-drawer-footer .login-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 11px 20px;
+    font-size: 0.9rem;
+    border-radius: 12px;
   }
 
   .login-btn-text { display: inline; }
@@ -255,7 +342,7 @@
 }
 
 /* ============================================ */
-/* RESPONSIVE � Phones pequenos (= 380px)       */
+/* RESPONSIVE — Phones pequenos (≤ 380px)       */
 /* ============================================ */
 @media (max-width: 380px) {
   .header-container { width: calc(100vw - 20px); padding: 8px 14px; border-radius: 20px; }

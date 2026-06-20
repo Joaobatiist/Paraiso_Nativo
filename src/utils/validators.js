@@ -84,6 +84,16 @@ export const validarNome = (nome) => {
   return regexNome.test(nome.trim());
 };
 
+// ── CAMPOS OBRIGATÓRIOS DO PERFIL PARA RESERVA ──
+export const CAMPOS_PERFIL_OBRIGATORIOS = [
+  { campo: 'nome',      label: 'Nome completo' },
+  { campo: 'documento', label: 'CPF ou CNPJ'   },
+  { campo: 'telefone',  label: 'Telefone'       },
+];
+
+export const perfilCamposFaltando = (perfilForm) =>
+  CAMPOS_PERFIL_OBRIGATORIOS.filter(({ campo }) => !perfilForm[campo]?.trim());
+
 // ── FUNÇÃO GENÉRICA ──
 export const validarCampo = (tipo, valor) => {
   const validacoes = {

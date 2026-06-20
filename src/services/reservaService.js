@@ -54,13 +54,21 @@ export const reservaService = {
 
 async criarNovaReserva(dadosReserva) {
   try {
+    const EXPIRACAO_MINUTOS = 20;
+    const limite = new Date(Date.now() - EXPIRACAO_MINUTOS * 60 * 1000).toISOString();
+
+    // Cancela reservas pendentes expiradas antes de verificar conflito
+    await supabase.rpc('cancelar_reservas_expiradas');
+
+    // Verifica conflito ignorando reservas pendentes expiradas
     const { data: conflito, error: erroQuery } = await supabase
       .from('reservas')
       .select('id')
       .eq('id_acomodacao', dadosReserva.id_acomodacao)
-      .not('status_reserva', 'eq', 'cancelada')  
-      .lte('data_checkin', dadosReserva.data_checkout)  
-      .gte('data_checkout', dadosReserva.data_checkin); 
+      .not('status_reserva', 'eq', 'cancelada')
+      .lte('data_checkin', dadosReserva.data_checkout)
+      .gte('data_checkout', dadosReserva.data_checkin)
+      .or(`status_reserva.neq.pendente,criado_em.gt.${limite}`);
 
     if (erroQuery) throw erroQuery;
 
@@ -75,6 +83,15 @@ async criarNovaReserva(dadosReserva) {
     throw error;
   }
 },
+
+  async iniciarPagamento(reservaId) {
+    const { data, error } = await supabase.functions.invoke('criar-preferencia', {
+      body: { reserva_id: reservaId },
+    });
+
+    if (error) throw new Error(error.message || 'Erro ao iniciar pagamento');
+    return data.init_point;
+  },
 
   // 3. ATUALIZAR STATUS (Ex: Confirmar ou Finalizar)
   async mudarStatus(id, novoStatus) {

@@ -18,6 +18,7 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
   const [mostrarCadastro, setMostrarCadastro] = useState(false);
   const [modalVisualizarAberto, setModalVisualizarAberto] = useState(false);
   const [reservaSelecionada, setReservaSelecionada] = useState(null);
+  const [pagandoId, setPagandoId] = useState(null);
 
   const carregar = useCallback(async (force = false) => {
     setLoading(true);
@@ -54,6 +55,17 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
   const handleCancelar = async (id) => {
     if (!window.confirm('Deseja cancelar esta reserva?')) return;
     await handleMudarStatus(id, 'cancelada');
+  };
+
+  const handlePagar = async (reservaId) => {
+    setPagandoId(reservaId);
+    try {
+      const url = await reservaService.iniciarPagamento(reservaId);
+      window.location.href = url;
+    } catch (e) {
+      alert('Erro ao iniciar pagamento: ' + e.message);
+      setPagandoId(null);
+    }
   };
 
   const reservasOrdenadas = ordenarReservasPorData(reservas);
@@ -99,7 +111,17 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
       </td>
       <td>
         {modoCliente ? (
-          <span className="readonly-text">Somente visualização</span>
+          r.status_reserva === 'pendente' && r.status_pagamento !== 'approved' ? (
+            <button
+              className="btn-pagar"
+              onClick={() => handlePagar(r.id)}
+              disabled={pagandoId === r.id}
+            >
+              {pagandoId === r.id ? 'Aguarde...' : 'Pagar'}
+            </button>
+          ) : (
+            <span className="readonly-text">Somente visualização</span>
+          )
         ) : (
           <div className="action-buttons">
             <button
@@ -146,6 +168,17 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
           {r.status_reserva || 'pendente'}
         </span>
       </p>
+      {modoCliente && r.status_reserva === 'pendente' && r.status_pagamento !== 'approved' && (
+        <div className="dash-card-actions">
+          <button
+            className="btn-pagar"
+            onClick={() => handlePagar(r.id)}
+            disabled={pagandoId === r.id}
+          >
+            {pagandoId === r.id ? 'Aguarde...' : 'Pagar agora'}
+          </button>
+        </div>
+      )}
       {!modoCliente && (
         <div className="dash-card-actions">
           {r.status_reserva !== 'confirmada' && (
@@ -280,6 +313,7 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
               <p><strong>Check-in:</strong> {formatarData(reservaSelecionada.data_checkin)}</p>
               <p><strong>Check-out:</strong> {formatarData(reservaSelecionada.data_checkout)}</p>
               <p><strong>Status:</strong> {reservaSelecionada.status_reserva || '—'}</p>
+              <p><strong>Status pagamento:</strong> {reservaSelecionada.status_pagamento || 'pendente'}</p>
               <p><strong>Valor total:</strong> {reservaSelecionada.valor_total ?? reservaSelecionada.valor ?? reservaSelecionada.total ?? '—'}</p>
               <p><strong>Criado em:</strong> {formatarData(reservaSelecionada.criado_em || '—')}</p>
             </div>

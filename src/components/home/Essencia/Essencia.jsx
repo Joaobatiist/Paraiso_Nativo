@@ -1,26 +1,44 @@
 import React from 'react';
-import { FaLeaf, FaWater, FaStar } from 'react-icons/fa';
+import { FaHome, FaFeatherAlt, FaPaw, FaUmbrellaBeach,FaTree, FaWhatsapp } from 'react-icons/fa';
 import './Essencia.css';
 
 const pilares = [
   {
     id: 1,
-    icone: FaLeaf,
-    label: 'Eco-friendly',
-    descricao: 'Construção sustentável em harmonia com a natureza',
+    icone: FaFeatherAlt,
+    label: 'Paz e sossego',
+    descricao: 'Um refúgio longe do barulho para renovar as energias',
   },
   {
-    id: 2,
-    icone: FaWater,
-    label: 'Perto do mar',
-    descricao: 'Acorde com o som suave das ondas todos os dias',
+    id:2,
+    icone: FaUmbrellaBeach,
+    label: 'A 500m do mar',
+    descricao: 'Caminhe até a praia de Subaúma em poucos minutos',
   },
   {
     id: 3,
-    icone: FaStar,
-    label: '5 Estrelas',
-    descricao: 'Serviço boutique de alto padrão e atenção ao detalhe',
+    icone: FaPaw,
+    label: 'Pet friendly',
+    descricao: 'Seu melhor amigo é bem-vindo aqui também',
   },
+  {
+    id:4, 
+    icone: FaHome,
+    label: 'Seu lar na praia',
+    descricao: 'Apartamentos completos com cozinha, sala e suíte para toda a família',
+  },
+  {
+  id: 5,
+  icone: FaTree,
+  label: 'Natureza preservada',
+  descricao: 'Rodeado pela exuberância da Linha Verde baiana',
+},
+{
+  id: 6,
+  icone: FaWhatsapp,
+  label: 'Reserva simples',
+  descricao: 'Fale direto pelo WhatsApp e garanta sua estadia em minutos',
+}
 ];
 
 const mosaico = [
@@ -54,15 +72,10 @@ const Essencia = () => (
         <span className="section-label light">Nossa história</span>
         <h2 className="section-title light">Nossa Essência</h2>
         <p className="essence-body">
-          Nascemos do desejo de criar um lugar onde a natureza e o conforto se
-          encontram em harmonia perfeita. Cada detalhe do Paraíso Nativo foi
-          pensado para que você desconecte do mundo e reconecte com o que
-          realmente importa.
+          O Paraíso Nativo nasceu de um sonho de família: criar um lar para cada hóspede se sinta em casa. 
+          Localizada na praia de Subaúma, a 500 metros do mar e a apenas 100km de Salvador, nossa pousada é um convite para desacelerar.
         </p>
-        <p className="essence-body">
-          Arquitetura ecológica, gastronomia local e hospitalidade genuína se
-          unem para oferecer uma experiência única e inesquecível.
-        </p>
+        
 
         <div className="essence-pillars">
           {pilares.map(({ id, icone: Icon, label, descricao }) => (

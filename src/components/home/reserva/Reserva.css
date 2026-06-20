@@ -343,6 +343,64 @@
 	}
 }
 
+/* ── Aviso de perfil incompleto ── */
+.reserva-perfil-aviso {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	background: #fffbeb;
+	border: 1.5px solid #fcd34d;
+	border-radius: 12px;
+	padding: 14px 16px;
+	margin-bottom: 4px;
+}
+
+.reserva-perfil-aviso-icone {
+	font-size: 1.2rem;
+	flex-shrink: 0;
+	margin-top: 1px;
+}
+
+.reserva-perfil-aviso strong {
+	display: block;
+	font-family: 'Inter', sans-serif;
+	font-size: .9rem;
+	font-weight: 700;
+	color: #92400e;
+	margin-bottom: 3px;
+}
+
+.reserva-perfil-aviso p {
+	margin: 0;
+	font-family: 'Inter', sans-serif;
+	font-size: .83rem;
+	color: #78350f;
+	line-height: 1.5;
+}
+
+/* Campo obrigatório faltando */
+.campo-faltando {
+	border-color: #f59e0b !important;
+	background: #fffdf5 !important;
+}
+
+.campo-faltando:focus {
+	box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18) !important;
+}
+
+.campo-obrigatorio-tag {
+	margin-left: 6px;
+	font-size: .7rem;
+	font-weight: 600;
+	color: #b45309;
+	background: #fef3c7;
+	border-radius: 4px;
+	padding: 1px 6px;
+	vertical-align: middle;
+	text-transform: uppercase;
+	letter-spacing: 0.3px;
+}
+
 @media (max-width: 720px) {
 	.reserva-section {
 		padding: 88px 18px;

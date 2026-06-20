@@ -108,6 +108,20 @@
 .gerenciar-reservas .delete-button { color: #ef4444; }
 .gerenciar-reservas .view-button {color: #2563eb;}
 
+.gerenciar-reservas .btn-pagar {
+	background: #009ee3;
+	color: #fff;
+	border: none;
+	border-radius: 6px;
+	padding: 6px 14px;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background 0.2s;
+}
+.gerenciar-reservas .btn-pagar:hover:not(:disabled) { background: #0077b6; }
+.gerenciar-reservas .btn-pagar:disabled { opacity: 0.6; cursor: not-allowed; }
+
 .gerenciar-reservas .status-badge {
 	display: inline-block;
 	padding: 6px 10px;

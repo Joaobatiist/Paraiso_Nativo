@@ -3,9 +3,9 @@ import Header from '@components/home/header/Header';
 import Home from '@components/home/Home';
 import Dashboard from '@components/dashboard/Dashboard';
 import Reserva from '@components/home/reserva/Reserva';
-import Footer from '@components/home/footer/Footer';
+import PagamentoFeedback from '@components/home/reserva/PagamentoFeedback';
+import RedefinirSenha from '@components/dashboard/login/RedefinirSenha';
 import LoginForm from '@components/dashboard/login/LoginForm';
-import Sidebar from '@components/dashboard/sidebar/Sidebar';
 import { PrivateRoute } from '@components/privateRouter/PrivateRouter'; 
 
 function App() {
@@ -35,6 +35,14 @@ function App() {
             </PrivateRoute>
           } 
         />
+
+        {/* RETORNO DO MERCADO PAGO APÓS PAGAMENTO */}
+        <Route path="/reserva/sucesso" element={<PagamentoFeedback />} />
+        <Route path="/reserva/falha" element={<PagamentoFeedback />} />
+        <Route path="/reserva/pendente" element={<PagamentoFeedback />} />
+
+        {/* REDEFINIÇÃO DE SENHA (link enviado por email pelo Supabase) */}
+        <Route path="/reset-senha" element={<RedefinirSenha />} />
 
         {/* REDIRECIONAMENTO PARA ERRO 404 */}
         <Route path="*" element={<Navigate to="/" />} />

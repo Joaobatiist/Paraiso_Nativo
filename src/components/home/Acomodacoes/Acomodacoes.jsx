@@ -74,7 +74,7 @@ const Acomodacoes = () => {
                       <FaMapMarkerAlt /> {item.localizacao}
                     </span>
                     <span className="accom-rating">
-                      <FaStar /> {item.avaliacao}
+                      <FaStar /> 
                     </span>
                   </div>
                   <h3 className="accom-name">{item.nome}</h3>

@@ -7,7 +7,7 @@ import { FaLock } from "react-icons/fa6";
 import './LoginForm.css';
 
 const LoginForm = ({ onLogin }) => {
-  const [authModo, setAuthModo] = useState('login');
+  const [authModo, setAuthModo] = useState('login'); // 'login' | 'cadastro' | 'esqueci'
   const [authLoading, setAuthLoading] = useState(false);
   const [authErro, setAuthErro] = useState('');
   const [authMsg, setAuthMsg] = useState('');
@@ -22,38 +22,29 @@ const LoginForm = ({ onLogin }) => {
   const { user } = useAuth();
   const BLOQUEIO_KEY = 'paraiso_login_bloqueio';
 
-  // Se já estiver logado, redireciona para o dashboard
   useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
-    }
+    if (user) navigate('/dashboard');
   }, [user, navigate]);
 
-  // Restaurar bloqueio do localStorage ao carregar a página
   useEffect(() => {
     const bloqueioArmazenado = localStorage.getItem(BLOQUEIO_KEY);
     if (bloqueioArmazenado) {
       const tempoExpiracao = parseInt(bloqueioArmazenado);
-      const agora = Date.now();
-      const tempoRestante = Math.ceil((tempoExpiracao - agora) / 1000);
-
+      const tempoRestante = Math.ceil((tempoExpiracao - Date.now()) / 1000);
       if (tempoRestante > 0) {
         setBloqueioTempo(tempoRestante);
         setAuthErro(`Muitas tentativas. Tente novamente em ${tempoRestante}s`);
       } else {
-        // Bloqueio expirou
         localStorage.removeItem(BLOQUEIO_KEY);
       }
     }
   }, []);
 
-  // 🔒 Contagem regressiva do bloqueio
   useEffect(() => {
     if (bloqueioTempo <= 0) {
       localStorage.removeItem(BLOQUEIO_KEY);
       return;
     }
-
     const interval = setInterval(() => {
       setBloqueioTempo((prev) => {
         const novo = prev - 1;
@@ -65,7 +56,6 @@ const LoginForm = ({ onLogin }) => {
         return novo;
       });
     }, 1000);
-
     return () => clearInterval(interval);
   }, [bloqueioTempo]);
 
@@ -75,14 +65,42 @@ const LoginForm = ({ onLogin }) => {
     setAuthMsg('');
   };
 
+  const trocarModo = (modo) => {
+    setAuthModo(modo);
+    setAuthErro('');
+    setAuthMsg('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setAuthErro('');
     setAuthMsg('');
 
-    // Bloquear se ainda está em cooldown
     if (bloqueioTempo > 0) {
       setAuthErro(`Aguarde ${bloqueioTempo}s antes de tentar novamente.`);
+      return;
+    }
+
+    
+    if (authModo === 'esqueci') {
+      if (!authForm.email.trim()) {
+        setAuthErro('Informe seu e-mail.');
+        return;
+      }
+      setAuthLoading(true);
+      try {
+        const base = import.meta.env.VITE_SITE_URL || window.location.origin;
+        const { error } = await supabase.auth.resetPasswordForEmail(
+          authForm.email.trim(),
+          { redirectTo: `${base}/reset-senha` }
+        );
+        if (error) throw new Error(error.message);
+        setAuthMsg('Link enviado! Verifique sua caixa de entrada e spam.');
+      } catch (err) {
+        setAuthErro(err.message || 'Erro ao enviar o link. Tente novamente.');
+      } finally {
+        setAuthLoading(false);
+      }
       return;
     }
 
@@ -105,27 +123,16 @@ const LoginForm = ({ onLogin }) => {
         return;
       }
     }
+
     setAuthLoading(true);
     try {
       if (authModo === 'login') {
-    const email = authForm.email.trim();
-    const senha = authForm.senha;
-
-   await loginControlado(email, senha);
-
-  // Login real (cria sessão)
-    const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password: senha,
-  });
-
-  if (error) throw new Error(error.message);
-
-  setAuthForm((prev) => ({
-    ...prev,
-    senha: '',
-    confirmarSenha: '',
-  }));
+        const email = authForm.email.trim();
+        const senha = authForm.senha;
+        await loginControlado(email, senha);
+        const { error } = await supabase.auth.signInWithPassword({ email, password: senha });
+        if (error) throw new Error(error.message);
+        setAuthForm((prev) => ({ ...prev, senha: '', confirmarSenha: '' }));
         navigate('/dashboard');
         return;
       }
@@ -133,37 +140,23 @@ const LoginForm = ({ onLogin }) => {
       const { data, error } = await supabase.auth.signUp({
         email: authForm.email.trim(),
         password: authForm.senha,
-        options: {
-          data: {
-            nome: authForm.nome.trim(),
-          },
-        },
+        options: { data: { nome: authForm.nome.trim() } },
       });
       if (error) throw new Error(error.message);
 
       if (!data.session) {
         setAuthMsg('Conta criada! Verifique seu e-mail para confirmar e depois faça login.');
-        setAuthModo('login');
-        setAuthForm((prev) => ({
-          ...prev,
-          senha: '',
-          confirmarSenha: '',
-        }));
+        trocarModo('login');
+        setAuthForm((prev) => ({ ...prev, senha: '', confirmarSenha: '' }));
         return;
       }
-
       navigate('/dashboard');
     } catch (err) {
       const mensagem = err.message || 'Email ou senha incorretos!';
-      
-      // Se contém mensagem de bloqueio, ativar contagem regressiva
       if (mensagem.includes('Muitas tentativas')) {
         const match = mensagem.match(/(\d+)s/);
         const segundos = match ? parseInt(match[1]) : 60;
-        const tempoExpiracao = Date.now() + segundos * 1000;
-        
-        localStorage.setItem(BLOQUEIO_KEY, tempoExpiracao.toString());
-        
+        localStorage.setItem(BLOQUEIO_KEY, (Date.now() + segundos * 1000).toString());
         setBloqueioTempo(segundos);
         setAuthErro(`Muitas tentativas. Tente novamente em ${segundos}s`);
       } else {
@@ -185,28 +178,37 @@ const LoginForm = ({ onLogin }) => {
         >
           &lt;- Voltar
         </button>
+
         <div className="login-header">
           <img src="/logo.png" alt="Paraíso Nativo" className="login-logo" />
-          <h3>Bem-vindo ao Paraíso Nativo</h3>
-          <p>Faça login ou crie sua conta para continuar.</p>
+          <h3>
+            {authModo === 'esqueci' ? 'Redefinir senha' : 'Bem-vindo ao Paraíso Nativo'}
+          </h3>
+          <p>
+            {authModo === 'esqueci'
+              ? 'Informe seu e-mail e enviaremos um link para criar uma nova senha.'
+              : 'Faça login ou crie sua conta para continuar.'}
+          </p>
         </div>
 
-        <div className="reserva-auth-tabs">
-          <button
-            type="button"
-            className={authModo === 'login' ? 'ativo' : ''}
-            onClick={() => { setAuthModo('login'); setAuthErro(''); setAuthMsg(''); }}
-          >
-            Entrar
-          </button>
-          <button
-            type="button"
-            className={authModo === 'cadastro' ? 'ativo' : ''}
-            onClick={() => { setAuthModo('cadastro'); setAuthErro(''); setAuthMsg(''); }}
-          >
-            Cadastrar
-          </button>
-        </div>
+        {authModo !== 'esqueci' && (
+          <div className="reserva-auth-tabs">
+            <button
+              type="button"
+              className={authModo === 'login' ? 'ativo' : ''}
+              onClick={() => trocarModo('login')}
+            >
+              Entrar
+            </button>
+            <button
+              type="button"
+              className={authModo === 'cadastro' ? 'ativo' : ''}
+              onClick={() => trocarModo('cadastro')}
+            >
+              Cadastrar
+            </button>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="reserva-auth-form">
           {authModo === 'cadastro' && (
@@ -234,17 +236,31 @@ const LoginForm = ({ onLogin }) => {
             />
           </label>
 
-          <label>
-            <span>Senha</span>
-            <input
-              type="password"
-              value={authForm.senha}
-              onChange={(e) => handleAuthChange('senha', e.target.value)}
-              placeholder="******"
-              required
-              autoComplete={authModo === 'login' ? 'current-password' : 'new-password'}
-            />
-          </label>
+          {authModo !== 'esqueci' && (
+            <label>
+              <span>Senha</span>
+              <input
+                type="password"
+                value={authForm.senha}
+                onChange={(e) => handleAuthChange('senha', e.target.value)}
+                placeholder="******"
+                required
+                autoComplete={authModo === 'login' ? 'current-password' : 'new-password'}
+              />
+            </label>
+          )}
+
+          {authModo === 'login' && (
+            <div className="esqueci-link-wrapper">
+              <button
+                type="button"
+                className="esqueci-link"
+                onClick={() => trocarModo('esqueci')}
+              >
+                Esqueceu sua senha?
+              </button>
+            </div>
+          )}
 
           {authModo === 'cadastro' && (
             <label>
@@ -267,15 +283,31 @@ const LoginForm = ({ onLogin }) => {
           )}
           {authMsg && <p className="reserva-feedback sucesso">{authMsg}</p>}
 
-          <button type="submit" className="reserva-submit" disabled={authLoading || bloqueioTempo > 0}>
+          <button
+            type="submit"
+            className="reserva-submit"
+            disabled={authLoading || bloqueioTempo > 0}
+          >
             {bloqueioTempo > 0
               ? `Bloqueado por ${bloqueioTempo}s`
               : authLoading
               ? 'Processando...'
               : authModo === 'cadastro'
-                ? 'Criar conta para reservar'
-                : 'Entrar e continuar'}
+              ? 'Criar conta para reservar'
+              : authModo === 'esqueci'
+              ? 'Enviar link de redefinição'
+              : 'Entrar e continuar'}
           </button>
+
+          {authModo === 'esqueci' && (
+            <button
+              type="button"
+              className="esqueci-voltar"
+              onClick={() => trocarModo('login')}
+            >
+              ← Voltar ao login
+            </button>
+          )}
         </form>
       </div>
     </div>

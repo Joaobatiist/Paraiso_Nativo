@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { FaCalendarAlt, FaChevronLeft, FaChevronRight, FaImage, FaUserFriends } from 'react-icons/fa';
+import { FaCircleExclamation } from 'react-icons/fa6';
 import { acomodacaoService } from '@services/acomodacaoService';
 import { reservaService } from '@services/reservaService';
 import { perfilService } from '@services/perfilService';
@@ -9,7 +10,7 @@ import { useAuth } from '@hooks/useAuth';
 import { normalizarAcomodacao } from '@utils/normalizadores';
 import { calcularNoites,calcularDiariaPorHospedes } from '@utils/calculadores';
 import { formatarMoeda, hoje, formatarData } from '@utils/formatters';
-import { validarReservaHome } from '@utils/validators';
+import { validarReservaHome, perfilCamposFaltando } from '@utils/validators';
 import { 
   mascaraTelefone, 
   mascaraCPF, 
@@ -45,25 +46,24 @@ const Reserva = () => {
   });
   const [salvando, setSalvando] = useState(false);
   const [valorEstimadoCalculado, setValorEstimadoCalculado] = useState(0);
-  const [calculandoValor, setCalculandoValor] = useState(false);
-  
-  
 
   useEffect(() => {
-  if (perfil) {
-    setPerfilForm({
-      nome: perfil?.nome || session?.user?.user_metadata?.nome || '',
-      email: perfil?.email || session?.user?.email || '',
-      documento: perfil?.documento || '',
-      telefone: perfil?.telefone || '',
-      cep: perfil?.cep || '',
-      rua: perfil?.rua || '',
-      bairro: perfil?.bairro || '',
-      cidade: perfil?.cidade || '',
-      estado: perfil?.estado || '',
-    });
-  }
-}, [perfil, session?.user?.email]);
+    if (perfil) {
+      setPerfilForm({
+        nome:      perfil.nome      || session?.user?.user_metadata?.nome || '',
+        email:     perfil.email     || session?.user?.email || '',
+        documento: perfil.documento || '',
+        telefone:  perfil.telefone  || '',
+        cep:       perfil.cep       || '',
+        rua:       perfil.rua       || '',
+        bairro:    perfil.bairro    || '',
+        cidade:    perfil.cidade    || '',
+        estado:    perfil.estado    || '',
+      });
+    }
+  }, [perfil, session?.user?.email]);
+
+  const camposFaltando = perfilCamposFaltando(perfilForm);
 
  useEffect(() => {
   let cancelado = false;
@@ -127,7 +127,6 @@ const Reserva = () => {
         return;
       }
 
-      setCalculandoValor(true);
       try {
         const resultado = await calcularReservaService.calcularValorTotal(
           acomodacaoSelecionada.id,
@@ -137,13 +136,10 @@ const Reserva = () => {
           form.hospedes
         );
         setValorEstimadoCalculado(resultado.valorTotal);
-      } catch (error) {
-        // Se houver erro, usa o cálculo simples
+      } catch {
         const noites = calcularNoites(form.data_checkin, form.data_checkout);
         const valorDiaria = calcularDiariaPorHospedes(form.hospedes, acomodacaoSelecionada?.precoDiaria);
         setValorEstimadoCalculado(valorDiaria * noites);
-      } finally {
-        setCalculandoValor(false);
       }
     };
 
@@ -249,21 +245,18 @@ const Reserva = () => {
 
       await perfilService.salvarPerfilCliente(session.user.id, perfilForm);
 
-      await reservaService.criarNovaReserva({
+      const novaReserva = await reservaService.criarNovaReserva({
         id_usuario: session.user.id,
         id_acomodacao: acomodacaoSelecionada.id,
         data_checkin: form.data_checkin,
         data_checkout: form.data_checkout,
         valor_total: valorEstimado,
+        hospedes: Number(form.hospedes) || 1,
         status_reserva: 'pendente',
       });
 
-      setSucesso('Reserva enviada com sucesso! Nossa equipe vai confirmar a disponibilidade.');
-      setForm({
-        data_checkin: '',
-        data_checkout: '',
-        hospedes: 1,
-      });
+      const urlPagamento = await reservaService.iniciarPagamento(novaReserva.id);
+      window.location.href = urlPagamento;
     } catch (error) {
       setErro(error.message || 'Não foi possível finalizar a reserva agora.');
     } finally {
@@ -380,102 +373,51 @@ const Reserva = () => {
                         : 'Faça login para reservar com sua conta de cliente.'}
                   </div>
 
+                  {camposFaltando.length > 0 && (
+                    <div className="reserva-perfil-aviso">
+                      <FaCircleExclamation className="reserva-perfil-aviso-icone" />
+                      <div>
+                        <strong>Complete seus dados para reservar</strong>
+                        <p>
+                          Preencha os campos obrigatórios:{' '}
+                          {camposFaltando.map(({ label }) => label).join(', ')}.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="reserva-perfil-grid">
-                    <label>
-                      <span>Nome completo</span>
-                      <input
-                        type="text"
-                        value={perfilForm.nome}
-                        onChange={(e) => handlePerfilChange('nome', e.target.value)}
-                        placeholder="Seu nome"
-                        required
-                      />
-                    </label>
-
-                    <label>
-                      <span>E-mail</span>
-                      <input
-                        type="email"
-                        value={perfilForm.email}
-                        onChange={(e) => handlePerfilChange('email', e.target.value)}
-                        placeholder="seu@email.com"
-                        required
-                      />
-                    </label>
-
-                    <label>
-                      <span>CPF ou CNPJ</span>
-                      <input
-                        type="text"
-                        value={perfilForm.documento}
-                        onChange={(e) => handlePerfilChange('documento', e.target.value)}
-                        placeholder="000.000.000-00"
-                        inputMode="numeric"
-                      />
-                    </label>
-
-                    <label>
-                      <span>Telefone</span>
-                      <input
-                        type="text"
-                        value={perfilForm.telefone}
-                        onChange={(e) => handlePerfilChange('telefone', e.target.value)}
-                        placeholder="(00) 00000-0000"
-                        inputMode="numeric"
-                      />
-                    </label>
-
-                    <label>
-                      <span>CEP</span>
-                      <input
-                        type="text"
-                        value={perfilForm.cep}
-                        onChange={(e) => handlePerfilChange('cep', e.target.value)}
-                        placeholder="00000-000"
-                        inputMode="numeric"
-                      />
-                    </label>
-
-                    <label>
-                      <span>Rua</span>
-                      <input
-                        type="text"
-                        value={perfilForm.rua}
-                        onChange={(e) => handlePerfilChange('rua', e.target.value)}
-                        placeholder="Rua"
-                      />
-                    </label>
-
-                    <label>
-                      <span>Bairro</span>
-                      <input
-                        type="text"
-                        value={perfilForm.bairro}
-                        onChange={(e) => handlePerfilChange('bairro', e.target.value)}
-                        placeholder="Bairro"
-                      />
-                    </label>
-
-                    <label>
-                      <span>Cidade</span>
-                      <input
-                        type="text"
-                        value={perfilForm.cidade}
-                        onChange={(e) => handlePerfilChange('cidade', e.target.value)}
-                        placeholder="Cidade"
-                      />
-                    </label>
-
-                    <label>
-                      <span>Estado</span>
-                      <input
-                        type="text"
-                        maxLength={2}
-                        value={perfilForm.estado}
-                        onChange={(e) => handlePerfilChange('estado', e.target.value.toUpperCase())}
-                        placeholder="UF"
-                      />
-                    </label>
+                    {[
+                      { campo: 'nome',      label: 'Nome completo',  type: 'text',     placeholder: 'Seu nome',         obrigatorio: true  },
+                      { campo: 'email',     label: 'E-mail',         type: 'email',    placeholder: 'seu@email.com',    obrigatorio: false },
+                      { campo: 'documento', label: 'CPF ou CNPJ',    type: 'text',     placeholder: '000.000.000-00',   obrigatorio: true, inputMode: 'numeric' },
+                      { campo: 'telefone',  label: 'Telefone',       type: 'text',     placeholder: '(00) 00000-0000',  obrigatorio: true, inputMode: 'numeric' },
+                      { campo: 'cep',       label: 'CEP',            type: 'text',     placeholder: '00000-000',        obrigatorio: false, inputMode: 'numeric' },
+                      { campo: 'rua',       label: 'Rua',            type: 'text',     placeholder: 'Rua',              obrigatorio: false },
+                      { campo: 'bairro',    label: 'Bairro',         type: 'text',     placeholder: 'Bairro',           obrigatorio: false },
+                      { campo: 'cidade',    label: 'Cidade',         type: 'text',     placeholder: 'Cidade',           obrigatorio: false },
+                      { campo: 'estado',    label: 'Estado',         type: 'text',     placeholder: 'UF',               obrigatorio: false, maxLength: 2 },
+                    ].map(({ campo, label, type, placeholder, obrigatorio, inputMode, maxLength }) => {
+                      const faltando = obrigatorio && !perfilForm[campo]?.trim();
+                      return (
+                        <label key={campo}>
+                          <span>
+                            {label}
+                            {faltando && <span className="campo-obrigatorio-tag">obrigatório</span>}
+                          </span>
+                          <input
+                            type={type}
+                            value={perfilForm[campo]}
+                            onChange={(e) => handlePerfilChange(campo, campo === 'estado' ? e.target.value.toUpperCase() : e.target.value)}
+                            placeholder={placeholder}
+                            className={faltando ? 'campo-faltando' : ''}
+                            inputMode={inputMode}
+                            maxLength={maxLength}
+                            required={obrigatorio}
+                          />
+                        </label>
+                      );
+                    })}
                   </div>
 
                   <div className="reserva-form-grid">
@@ -524,9 +466,15 @@ const Reserva = () => {
                   <button
                     type="submit"
                     className="reserva-submit"
-                    disabled={salvando ||  !session?.user?.id || acomodacaoSelecionada.status !== 'disponivel'}
+                    disabled={salvando || !session?.user?.id || acomodacaoSelecionada.status !== 'disponivel' || camposFaltando.length > 0}
                   >
-                    {salvando ? 'Enviando...' : acomodacaoSelecionada.status !== 'disponivel' ? 'Acomodação indisponível' : 'Reservar período'}
+                    {salvando
+                      ? 'Processando...'
+                      : acomodacaoSelecionada.status !== 'disponivel'
+                      ? 'Acomodação indisponível'
+                      : camposFaltando.length > 0
+                      ? 'Preencha os dados obrigatórios'
+                      : 'Reservar e pagar'}
                   </button>
                 </form>
               </>

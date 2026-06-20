@@ -94,18 +94,37 @@ const Header = () => {
 
         {/* Nav */}
         <nav className={`nav-links ${menuOpen ? 'nav-open' : ''}`}>
-          <button
-            className="nav-close-btn"
-            onClick={() => setMenuOpen(false)}
-            aria-label="Fechar menu"
-          >
-            <FaTimes />
-          </button>
-          <a href="#home" onClick={handleLinkClick}>Início</a>
-          <a href="#accommodation" onClick={handleLinkClick}>Acomodações</a>
-          <a href="#about" onClick={handleLinkClick}>Nossa Essência</a>
-          <a href="/reserva" onClick={handleLinkClick}>Reservas</a>
-          <a href="#contact" onClick={handleLinkClick}>Contato</a>
+          {/* Cabeçalho do drawer (visível só no mobile via CSS) */}
+          <div className="nav-drawer-header">
+            <div className="nav-drawer-brand">
+              <img src="/logo.png" alt="Paraíso Nativo" className="nav-drawer-logo" />
+              <span className="nav-drawer-name">Paraíso Nativo</span>
+            </div>
+            <button
+              className="nav-close-btn"
+              onClick={() => setMenuOpen(false)}
+              aria-label="Fechar menu"
+            >
+              <FaTimes />
+            </button>
+          </div>
+
+          {/* Links */}
+          <div className="nav-drawer-links">
+            <a href="#home" onClick={handleLinkClick}>Início</a>
+            <a href="#accommodation" onClick={handleLinkClick}>Acomodações</a>
+            <a href="#about" onClick={handleLinkClick}>Nossa Essência</a>
+            <a href="/reserva" onClick={handleLinkClick}>Reservas</a>
+            <a href="#contact" onClick={handleLinkClick}>Contato</a>
+          </div>
+
+          {/* Rodapé do drawer com botão de login */}
+          <div className="nav-drawer-footer">
+            <a href="/login" className="login-btn">
+              <FaUserCircle />
+              <span className="login-btn-text">Entrar na conta</span>
+            </a>
+          </div>
         </nav>
 
         {/* Ações: login + hamburger */}
