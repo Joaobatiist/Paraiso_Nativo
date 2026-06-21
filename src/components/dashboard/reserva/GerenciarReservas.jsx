@@ -2,11 +2,11 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { reservaService } from '@services/reservaService';
 import CadastroReserva from './CadastroReserva';
 import { FaCheck, FaTimes, FaSyncAlt, FaExclamationTriangle, FaPlus, FaEye } from 'react-icons/fa';
+import { FaCircleExclamation, FaCircleCheck, FaEnvelope, FaXmark } from 'react-icons/fa6';
 import "react-datepicker/dist/react-datepicker.css";
 import './GerenciarReservas.css';
-import {formatarData} from '@utils/formatters'
-import {ordenarReservasPorData} from '@utils/time'
-
+import { formatarData, formatarMoeda } from '@utils/formatters';
+import { ordenarReservasPorData } from '@utils/time';
 
 const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
   const [reservas, setReservas] = useState([]);
@@ -18,7 +18,12 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
   const [mostrarCadastro, setMostrarCadastro] = useState(false);
   const [modalVisualizarAberto, setModalVisualizarAberto] = useState(false);
   const [reservaSelecionada, setReservaSelecionada] = useState(null);
-  const [pagandoId, setPagandoId] = useState(null);
+
+  // Estado do modal de status para o cliente
+  const [modalClienteAberto, setModalClienteAberto] = useState(false);
+  const [reservaCliente, setReservaCliente] = useState(null);
+  const [loadingAcao, setLoadingAcao] = useState(false);
+  const [erroModal, setErroModal] = useState('');
 
   const carregar = useCallback(async (force = false) => {
     setLoading(true);
@@ -57,14 +62,50 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
     await handleMudarStatus(id, 'cancelada');
   };
 
-  const handlePagar = async (reservaId) => {
-    setPagandoId(reservaId);
+  const handleVerDetalhes = (reserva) => {
+    setReservaSelecionada(reserva);
+    setModalVisualizarAberto(true);
+  };
+
+  // Abre modal do cliente
+  const handleVerDetalhesCliente = (r) => {
+    setReservaCliente(r);
+    setErroModal('');
+    setModalClienteAberto(false);
+    // pequeno delay para forçar re-render se já estava aberto
+    setTimeout(() => setModalClienteAberto(true), 0);
+  };
+
+  const handlePagarModal = async () => {
+    setLoadingAcao(true);
+    setErroModal('');
     try {
-      const url = await reservaService.iniciarPagamento(reservaId);
+      const url = await reservaService.iniciarPagamento(reservaCliente.id);
       window.location.href = url;
+    } catch {
+      setErroModal('Não foi possível iniciar o pagamento. Tente novamente.');
+      setLoadingAcao(false);
+    }
+  };
+
+  const handleCancelarModal = async () => {
+    if (!window.confirm('Tem certeza que deseja cancelar esta reserva? Esta ação não pode ser desfeita.')) return;
+    setLoadingAcao(true);
+    setErroModal('');
+    try {
+      const resultado = await reservaService.mudarStatus(reservaCliente.id, 'cancelada');
+      if (!resultado) {
+        setErroModal('Não foi possível cancelar. Verifique suas permissões ou tente novamente.');
+        return;
+      }
+      setReservas(prev =>
+        prev.map(r => r.id === reservaCliente.id ? { ...r, status_reserva: 'cancelada' } : r)
+      );
+      setModalClienteAberto(false);
     } catch (e) {
-      alert('Erro ao iniciar pagamento: ' + e.message);
-      setPagandoId(null);
+      setErroModal('Não foi possível cancelar: ' + (e.message || 'Tente novamente.'));
+    } finally {
+      setLoadingAcao(false);
     }
   };
 
@@ -80,15 +121,7 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
   const reservasNaPagina = reservasFiltradas.slice(indiceInicial, indiceInicial + itensPorPagina);
 
   const irParaPagina = (pagina) => {
-    const paginaNormalizada = Math.min(Math.max(pagina, 1), totalPaginas);
-    setPaginaAtual(paginaNormalizada);
-  };
-
-  
-
-  const handleVerDetalhes = (reserva) => {
-    setReservaSelecionada(reserva);
-    setModalVisualizarAberto(true);
+    setPaginaAtual(Math.min(Math.max(pagina, 1), totalPaginas));
   };
 
   const ReservaRow = ({ r }) => (
@@ -111,41 +144,25 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
       </td>
       <td>
         {modoCliente ? (
-          r.status_reserva === 'pendente' && r.status_pagamento !== 'approved' ? (
-            <button
-              className="btn-pagar"
-              onClick={() => handlePagar(r.id)}
-              disabled={pagandoId === r.id}
-            >
-              {pagandoId === r.id ? 'Aguarde...' : 'Pagar'}
-            </button>
-          ) : (
-            <span className="readonly-text">Somente visualização</span>
-          )
+          <button
+            className="view-button"
+            title="Ver detalhes"
+            onClick={() => handleVerDetalhesCliente(r)}
+          >
+            <FaEye />
+          </button>
         ) : (
           <div className="action-buttons">
-            <button
-              className="view-button"
-              title="Ver detalhes"
-              onClick={() => handleVerDetalhes(r)}
-            >
+            <button className="view-button" title="Ver detalhes" onClick={() => handleVerDetalhes(r)}>
               <FaEye />
             </button>
             {r.status_reserva !== 'confirmada' && (
-              <button
-                className="edit-button"
-                title="Confirmar reserva"
-                onClick={() => handleMudarStatus(r.id, 'confirmada')}
-              >
+              <button className="edit-button" title="Confirmar reserva" onClick={() => handleMudarStatus(r.id, 'confirmada')}>
                 <FaCheck />
               </button>
             )}
             {r.status_reserva !== 'cancelada' && (
-              <button
-                className="delete-button"
-                title="Cancelar reserva"
-                onClick={() => handleCancelar(r.id)}
-              >
+              <button className="delete-button" title="Cancelar reserva" onClick={() => handleCancelar(r.id)}>
                 <FaTimes />
               </button>
             )}
@@ -168,34 +185,28 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
           {r.status_reserva || 'pendente'}
         </span>
       </p>
-      {modoCliente && r.status_reserva === 'pendente' && r.status_pagamento !== 'approved' && (
-        <div className="dash-card-actions">
-          <button
-            className="btn-pagar"
-            onClick={() => handlePagar(r.id)}
-            disabled={pagandoId === r.id}
-          >
-            {pagandoId === r.id ? 'Aguarde...' : 'Pagar agora'}
+      <div className="dash-card-actions">
+        {modoCliente ? (
+          <button className="view-button" onClick={() => handleVerDetalhesCliente(r)}>
+            <FaEye /> Ver detalhes
           </button>
-        </div>
-      )}
-      {!modoCliente && (
-        <div className="dash-card-actions">
-          {r.status_reserva !== 'confirmada' && (
-            <button className="edit-button" onClick={() => handleMudarStatus(r.id, 'confirmada')}>
-              <FaCheck /> Confirmar
-            </button>
-          )}
-          {r.status_reserva !== 'cancelada' && (
-            <button className="delete-button" onClick={() => handleCancelar(r.id)}>
-              <FaTimes /> Cancelar
-            </button>
-          )}
-        </div>
-      )}
+        ) : (
+          <>
+            {r.status_reserva !== 'confirmada' && (
+              <button className="edit-button" onClick={() => handleMudarStatus(r.id, 'confirmada')}>
+                <FaCheck /> Confirmar
+              </button>
+            )}
+            {r.status_reserva !== 'cancelada' && (
+              <button className="delete-button" onClick={() => handleCancelar(r.id)}>
+                <FaTimes /> Cancelar
+              </button>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
-
 
   return (
     <div className="gerenciar-reservas">
@@ -222,17 +233,11 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
           <FaSyncAlt /> Atualizar
         </button>
         {modoCliente ? (
-          <button
-            onClick={() => { window.location.href = '/reserva'; }}
-            className="btn-reservar-more"
-          >
+          <button onClick={() => { window.location.href = '/reserva'; }} className="btn-reservar-more">
             <FaPlus /> Reservar mais
           </button>
         ) : (
-          <button
-            onClick={() => setMostrarCadastro(true)}
-            className="btn-nova-reserva"
-          >
+          <button onClick={() => setMostrarCadastro(true)} className="btn-nova-reserva">
             <FaPlus /> Nova Reserva
           </button>
         )}
@@ -248,7 +253,6 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
         </div>
       ) : (
         <>
-          {/* Tabela desktop */}
           <div className="dash-table-desktop dash-table-wrap">
             <table>
               <thead>
@@ -267,7 +271,6 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
             </table>
           </div>
 
-          {/* Cards mobile */}
           <div className="dash-cards-mobile">
             {reservasNaPagina.map(r => <ReservaCard key={r.id} r={r} />)}
           </div>
@@ -281,12 +284,10 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
               >
                 ← Anterior
               </button>
-
               <div className="pagination-summary">
                 <strong>Página {paginaValida} de {totalPaginas}</strong>
                 <span>({reservasFiltradas.length} reservas)</span>
               </div>
-
               <button
                 className="pagination-button pagination-next"
                 onClick={() => irParaPagina(paginaAtual + 1)}
@@ -299,7 +300,7 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
         </>
       )}
 
-      {/* Modal de Visualização de Reserva */}
+      {/* Modal de detalhes — admin */}
       {modalVisualizarAberto && reservaSelecionada && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -314,10 +315,101 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
               <p><strong>Check-out:</strong> {formatarData(reservaSelecionada.data_checkout)}</p>
               <p><strong>Status:</strong> {reservaSelecionada.status_reserva || '—'}</p>
               <p><strong>Status pagamento:</strong> {reservaSelecionada.status_pagamento || 'pendente'}</p>
-              <p><strong>Valor total:</strong> {reservaSelecionada.valor_total ?? reservaSelecionada.valor ?? reservaSelecionada.total ?? '—'}</p>
+              <p><strong>Valor total:</strong> {reservaSelecionada.valor_total ?? '—'}</p>
               <p><strong>Criado em:</strong> {formatarData(reservaSelecionada.criado_em || '—')}</p>
             </div>
             <button className="btn-fechar" onClick={() => setModalVisualizarAberto(false)}>Fechar</button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de status — cliente */}
+      {modalClienteAberto && reservaCliente && (
+        <div className="modal-overlay" onClick={() => setModalClienteAberto(false)}>
+          <div className="modal-status-cliente" onClick={e => e.stopPropagation()}>
+            <button
+              className="modal-status-fechar"
+              onClick={() => setModalClienteAberto(false)}
+              aria-label="Fechar"
+            >
+              <FaXmark />
+            </button>
+
+            {reservaCliente.status_reserva === 'pendente' ? (
+              <div className="mrc-panel pendente">
+                <div className="mrc-header">
+                  <FaCircleExclamation className="mrc-icone" />
+                  <div>
+                    <strong>Reserva pendente de pagamento</strong>
+                    <p>Conclua o pagamento ou cancele para fazer uma nova reserva.</p>
+                  </div>
+                </div>
+                <table className="mrc-tabela">
+                  <tbody>
+                    <tr><td>Acomodação</td><td>{reservaCliente.acomodacoes?.nome}</td></tr>
+                    <tr><td>Check-in</td><td>{formatarData(reservaCliente.data_checkin)} às 14h</td></tr>
+                    <tr><td>Check-out</td><td>{formatarData(reservaCliente.data_checkout)} às 12h</td></tr>
+                    <tr><td>Hóspedes</td><td>{reservaCliente.hospedes} hóspede(s)</td></tr>
+                    <tr><td>Valor total</td><td><strong>{formatarMoeda(reservaCliente.valor_total)}</strong></td></tr>
+                  </tbody>
+                </table>
+                {erroModal && <p className="mrc-erro">{erroModal}</p>}
+                <div className="mrc-acoes">
+                  <button className="mrc-btn-pagar" onClick={handlePagarModal} disabled={loadingAcao}>
+                    {loadingAcao ? 'Aguarde...' : 'Concluir pagamento →'}
+                  </button>
+                  <button className="mrc-btn-cancelar" onClick={handleCancelarModal} disabled={loadingAcao}>
+                    Cancelar reserva
+                  </button>
+                </div>
+              </div>
+
+            ) : reservaCliente.status_reserva === 'confirmada' ? (
+              <div className="mrc-panel confirmada">
+                <div className="mrc-header">
+                  <FaCircleCheck className="mrc-icone" />
+                  <div>
+                    <strong>Reserva confirmada!</strong>
+                    <p>Seu pagamento foi aprovado. A pousada foi notificada da sua chegada.</p>
+                  </div>
+                </div>
+                <table className="mrc-tabela">
+                  <tbody>
+                    <tr><td>Acomodação</td><td>{reservaCliente.acomodacoes?.nome}</td></tr>
+                    <tr><td>Check-in</td><td>{formatarData(reservaCliente.data_checkin)} às 14h</td></tr>
+                    <tr><td>Check-out</td><td>{formatarData(reservaCliente.data_checkout)} às 12h</td></tr>
+                    <tr><td>Hóspedes</td><td>{reservaCliente.hospedes} hóspede(s)</td></tr>
+                    <tr><td>Valor total</td><td><strong>{formatarMoeda(reservaCliente.valor_total)}</strong></td></tr>
+                  </tbody>
+                </table>
+                <div className="mrc-email-info">
+                  <FaEnvelope />
+                  <p>
+                    Verifique sua caixa de entrada por um e-mail enviado de{' '}
+                    <strong>paraisonativo@gmail.com</strong> com todos os detalhes do seu check-in,
+                    regras e informações da pousada.
+                  </p>
+                </div>
+              </div>
+
+            ) : (
+              <div className="mrc-panel cancelada">
+                <div className="mrc-header">
+                  <div>
+                    <strong>Reserva cancelada</strong>
+                    <p>Esta reserva foi cancelada e não está mais ativa.</p>
+                  </div>
+                </div>
+                <table className="mrc-tabela">
+                  <tbody>
+                    <tr><td>Acomodação</td><td>{reservaCliente.acomodacoes?.nome}</td></tr>
+                    <tr><td>Check-in</td><td>{formatarData(reservaCliente.data_checkin)}</td></tr>
+                    <tr><td>Check-out</td><td>{formatarData(reservaCliente.data_checkout)}</td></tr>
+                    <tr><td>Valor total</td><td>{formatarMoeda(reservaCliente.valor_total)}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}
