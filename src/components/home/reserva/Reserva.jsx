@@ -18,7 +18,7 @@ import {
   apenasLetras,
   apenasLetrasNumeros
 } from '@utils/masks';
-import './reserva.css';
+import './Reserva.css';
 
 const CAMPOS_PERFIL = [
   { campo: 'nome',      label: 'Nome completo', type: 'text',  placeholder: 'Seu nome',        obrigatorio: true  },
