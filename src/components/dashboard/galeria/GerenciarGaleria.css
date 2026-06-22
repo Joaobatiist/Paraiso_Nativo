@@ -20,15 +20,20 @@
 .galeria-refresh-btn {
   padding: 8px 16px;
   border-radius: 8px;
-  border: 1px solid var(--gray-300);
-  background: var(--gray-100);
-  cursor: pointer;
-  font-size: 13px;
-  transition: background-color 0.2s ease;
+  border: none;
+	background: linear-gradient(135deg, #1a5fc0, #1a5fc0);
+	color: white;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 600;
+	box-shadow: 0 3px 10px rgba(5, 85, 150, 0.28);
+  transition: all 0.2 ease;
 }
 
 .galeria-refresh-btn:hover {
   background-color: var(--gray-200);
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(80, 132, 229, 0.3);
 }
 
 .galeria-count-badge {

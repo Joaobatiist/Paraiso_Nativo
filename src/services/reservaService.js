@@ -53,6 +53,7 @@ export const reservaService = {
   },
 
 async criarNovaReserva(dadosReserva) {
+  let quantidade = 1;
   try {
     const EXPIRACAO_MINUTOS = 20;
     const limite = new Date(Date.now() - EXPIRACAO_MINUTOS * 60 * 1000).toISOString();
@@ -60,8 +61,18 @@ async criarNovaReserva(dadosReserva) {
     // Cancela reservas pendentes expiradas antes de verificar conflito
     await supabase.rpc('cancelar_reservas_expiradas');
 
-    // Verifica conflito ignorando reservas pendentes expiradas
-    const { data: conflito, error: erroQuery } = await supabase
+    // Busca quantidade de unidades da acomodação
+    const { data: acomData, error: erroAcom } = await supabase
+      .from('acomodacoes')
+      .select('quantidade')
+      .eq('id', dadosReserva.id_acomodacao)
+      .single();
+
+    if (erroAcom) throw erroAcom;
+    quantidade = acomData?.quantidade ?? 1;
+
+    // Conta reservas que se sobrepõem ao período solicitado
+    const { data: reservasNoPeriodo, error: erroQuery } = await supabase
       .from('reservas')
       .select('id')
       .eq('id_acomodacao', dadosReserva.id_acomodacao)
@@ -72,14 +83,34 @@ async criarNovaReserva(dadosReserva) {
 
     if (erroQuery) throw erroQuery;
 
-    if (conflito && conflito.length > 0) {
-      throw new Error("Este quarto já está reservado para as datas selecionadas.");
+    const reservasAtivas = reservasNoPeriodo?.length ?? 0;
+
+    if (reservasAtivas >= quantidade) {
+      throw new Error(
+        quantidade > 1
+          ? `Sem vagas disponíveis para este período. Todas as ${quantidade} unidades estão ocupadas.`
+          : 'Esta acomodação já está reservada para as datas selecionadas.'
+      );
     }
 
     const created = await supabaseService.create('reservas', dadosReserva);
     reservaService._cache = {};
     return created;
   } catch (error) {
+    // Captura também erros do trigger do banco (race condition)
+    const msg = error?.message ?? '';
+    const eTriggerSemVaga =
+      error?.code === 'P0001' ||
+      msg.includes('impedir_conflito') ||
+      msg.includes('exclusion constraint');
+
+    if (eTriggerSemVaga) {
+      throw new Error(
+        quantidade > 1
+          ? `Sem vagas disponíveis para este período. Todas as ${quantidade} unidades estão ocupadas.`
+          : 'Esta acomodação já está reservada para as datas selecionadas.'
+      );
+    }
     throw error;
   }
 },

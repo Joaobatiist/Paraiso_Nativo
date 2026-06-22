@@ -8,6 +8,7 @@ const estadoInicial = {
   descricao: '',
   preco_diaria: '',
   capacidade_pessoas: 2,
+  quantidade: 1,
   url_capa: '',
   status: 'disponivel',
 };
@@ -42,6 +43,7 @@ const CadastroAcomodacao = ({ onSalvo }) => {
         descricao: form.descricao.trim() || null,
         preco_diaria: Number(form.preco_diaria),
         capacidade_pessoas: Number(form.capacidade_pessoas),
+        quantidade: Number(form.quantidade) || 1,
         url_capa: form.url_capa.trim() || null,
         status: form.status,
       });
@@ -117,6 +119,19 @@ const CadastroAcomodacao = ({ onSalvo }) => {
               onChange={e => handleChange('capacidade_pessoas', e.target.value)}
               min={1}
               max={20}
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Nº de Unidades</label>
+            <input
+              type="number"
+              className="form-input"
+              value={form.quantidade}
+              onChange={e => handleChange('quantidade', e.target.value)}
+              min={1}
+              max={100}
+              title="Quantas unidades idênticas existem (ex: 7 suítes iguais)"
             />
           </div>
         </div>

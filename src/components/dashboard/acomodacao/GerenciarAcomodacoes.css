@@ -1,23 +1,33 @@
 /* Botão Atualizar */
 .btn-atualizar {
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: 1px solid var(--gray-300);
-  background: var(--gray-100);
-  cursor: pointer;
-  font-size: 13px;
+display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 18px;
+	border-radius: 20px;
+	border: none;
+	background: linear-gradient(135deg, #1a5fc0, #1a5fc0);
+	color: white;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 600;
+	box-shadow: 0 3px 10px rgba(5, 85, 150, 0.28);
 }
 
 /* Botão Nova Acomodação */
 .btn-nova-acom {
-  padding: 8px 18px;
-  border-radius: 8px;
-  border: none;
-  background: var(--primary-blue);
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 13px;
+  display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 18px;
+	border-radius: 20px;
+	border: none;
+	background: linear-gradient(135deg, #1a5fc0, #1a5fc0);
+	color: white;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 600;
+	box-shadow: 0 3px 10px rgba(5, 85, 150, 0.28);
 }
 
 /* Cabeçalho container */

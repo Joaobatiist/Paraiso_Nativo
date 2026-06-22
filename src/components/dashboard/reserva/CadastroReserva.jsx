@@ -8,7 +8,6 @@ import { acomodacaoService } from '@services/acomodacaoService';
 import { reservaService } from '@services/reservaService';
 import { perfilService } from '@services/perfilService';
 import { calcularReservaService } from '@services/calcularReservaService';
-import {calcularDiariaPorHospedes} from '@utils/calculadores'
 import './CadastroReserva.css';
 import {mascaraCPF, mascaraTelefone, apenasLetras} from '@utils/masks'
 import { validate } from '@utils/validators'
@@ -18,7 +17,7 @@ import { Field, SelectField } from './ReservaFields';
 const estadoInicial = {
   nome: '', cpf: '', email: '', telefone: '',
   id_acomodacao: '', data_checkin: '', data_checkout: '',
-  num_hospedes: '1', observacoes: '',
+  hospedes: '1', observacoes: '',
 };
 
 const CadastroReserva = ({ onClose, onSuccess }) => {
@@ -53,40 +52,50 @@ const CadastroReserva = ({ onClose, onSuccess }) => {
     setIsLoading(true);
     setErrors({});
     try {
-      // Salva ou atualiza o perfil do hóspede
-      const perfilData = await perfilService.salvarPerfil({
-        nome: form.nome.trim(),
-        email: form.email.trim(),
-        documento: form.cpf.trim(),
-        telefone: form.telefone.trim(),
-
-      });
-
-      const idUsuario = perfilData?.id ?? perfilData?.[0]?.id ?? null;
-
-      // Busca dados da acomodação
-      const acomodacao = acomodacoes.find(a => a.id === form.id_acomodacao);
-      
-      if (!acomodacao) {
-        throw new Error('Acomodação não encontrada');
+      // 1. Tenta vincular a um perfil existente pelo CPF (sem criar novo — evita violação de RLS)
+      let idUsuario = null;
+      try {
+        const perfisEncontrados = await perfilService.buscarPorDocumento(form.cpf.trim());
+        if (perfisEncontrados?.length > 0) {
+          idUsuario = perfisEncontrados[0].id;
+        }
+      } catch {
+        // Se SELECT também for bloqueado, segue sem vínculo
       }
 
-      // Calcula valor_total considerando pacotes promocionais
-      const resultadoCalculo = await calcularReservaService.calcularValorTotal(
-        form.id_acomodacao,
-        form.data_checkin,
-        form.data_checkout,
-        acomodacao.preco_diaria,
-        form.num_hospedes
-      );
+      // 2. Busca dados da acomodação
+      const acomodacao = acomodacoes.find(a => a.id === form.id_acomodacao);
+      if (!acomodacao) throw new Error('Acomodação não encontrada');
 
+      // 3. Calcula valor total
+      const valorDiaria = acomodacao.preco_diaria ?? acomodacao.valor_diaria ?? 0;
+      let valorTotal = 0;
+      try {
+        const calc = await calcularReservaService.calcularValorTotal(
+          form.id_acomodacao,
+          form.data_checkin,
+          form.data_checkout,
+          valorDiaria,
+          form.hospedes
+        );
+        valorTotal = calc.valorTotal;
+      } catch {
+        // Fallback: cálculo simples se pacotes promocionais falharem
+        const noites = Math.ceil(
+          (new Date(form.data_checkout) - new Date(form.data_checkin)) / 86_400_000
+        );
+        valorTotal = noites * Number(valorDiaria);
+      }
+
+      // 4. Cria reserva confirmada — criada pelo admin, sem necessidade de pagamento online
       await reservaService.criarNovaReserva({
         id_usuario: idUsuario,
         id_acomodacao: form.id_acomodacao,
         data_checkin: form.data_checkin,
         data_checkout: form.data_checkout,
-        valor_total: resultadoCalculo.valorTotal,
-        status_reserva: 'pendente',
+        valor_total: valorTotal,
+        hospedes: form.hospedes,
+        status_reserva: 'confirmada',
       });
 
       setSuccess(true);
@@ -175,8 +184,8 @@ const CadastroReserva = ({ onClose, onSuccess }) => {
                   value={form.telefone} onChange={handleChange} error={errors.telefone}
                 />
                 <SelectField
-                  campo="num_hospedes" label="Nº de Hóspedes" icon={FaUsers}
-                  value={form.num_hospedes} onChange={handleChange} error={errors.num_hospedes}
+                  campo="hospedes" label="Nº de Hóspedes" icon={FaUsers}
+                  value={form.hospedes} onChange={handleChange} error={errors.hospedes}
                 >
                   {[1,2,3,4,5,6,7,8,9,10].map(n => (
                     <option key={n} value={String(n)}>{n} {n === 1 ? 'hóspede' : 'hóspedes'}</option>
