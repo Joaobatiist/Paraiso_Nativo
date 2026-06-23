@@ -52,16 +52,31 @@ export const reservaService = {
     }
   },
 
+  // Verifica disponibilidade sem criar reserva — usado na home e no formulário
+  async verificarDisponibilidade(idAcomodacao, checkin, checkout, quantidade = 1) {
+    const limite = new Date(Date.now() - 20 * 60 * 1000).toISOString();
+
+    const { data, error } = await supabase
+      .from('reservas')
+      .select('id')
+      .eq('id_acomodacao', idAcomodacao)
+      .not('status_reserva', 'eq', 'cancelada')
+      .lte('data_checkin', checkout)
+      .gte('data_checkout', checkin)
+      .or(`status_reserva.neq.pendente,criado_em.gt.${limite}`);
+
+    if (error) throw error;
+
+    const reservasAtivas = data?.length ?? 0;
+    const disponiveis    = Math.max(0, quantidade - reservasAtivas);
+    return { disponivel: disponiveis > 0, disponiveis };
+  },
+
 async criarNovaReserva(dadosReserva) {
   let quantidade = 1;
   try {
-    const EXPIRACAO_MINUTOS = 20;
-    const limite = new Date(Date.now() - EXPIRACAO_MINUTOS * 60 * 1000).toISOString();
-
-    // Cancela reservas pendentes expiradas antes de verificar conflito
     await supabase.rpc('cancelar_reservas_expiradas');
 
-    // Busca quantidade de unidades da acomodação
     const { data: acomData, error: erroAcom } = await supabase
       .from('acomodacoes')
       .select('quantidade')
@@ -71,21 +86,14 @@ async criarNovaReserva(dadosReserva) {
     if (erroAcom) throw erroAcom;
     quantidade = acomData?.quantidade ?? 1;
 
-    // Conta reservas que se sobrepõem ao período solicitado
-    const { data: reservasNoPeriodo, error: erroQuery } = await supabase
-      .from('reservas')
-      .select('id')
-      .eq('id_acomodacao', dadosReserva.id_acomodacao)
-      .not('status_reserva', 'eq', 'cancelada')
-      .lte('data_checkin', dadosReserva.data_checkout)
-      .gte('data_checkout', dadosReserva.data_checkin)
-      .or(`status_reserva.neq.pendente,criado_em.gt.${limite}`);
+    const { disponivel } = await reservaService.verificarDisponibilidade(
+      dadosReserva.id_acomodacao,
+      dadosReserva.data_checkin,
+      dadosReserva.data_checkout,
+      quantidade,
+    );
 
-    if (erroQuery) throw erroQuery;
-
-    const reservasAtivas = reservasNoPeriodo?.length ?? 0;
-
-    if (reservasAtivas >= quantidade) {
+    if (!disponivel) {
       throw new Error(
         quantidade > 1
           ? `Sem vagas disponíveis para este período. Todas as ${quantidade} unidades estão ocupadas.`
@@ -97,7 +105,6 @@ async criarNovaReserva(dadosReserva) {
     reservaService._cache = {};
     return created;
   } catch (error) {
-    // Captura também erros do trigger do banco (race condition)
     const msg = error?.message ?? '';
     const eTriggerSemVaga =
       error?.code === 'P0001' ||

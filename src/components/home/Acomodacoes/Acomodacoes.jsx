@@ -6,39 +6,13 @@ import {
 } from 'react-icons/fa';
 import { acomodacaoService } from '@services/acomodacaoService';
 import { supabase } from '@lib/supabase';
+import { normalizarAcomodacaoCard } from '@utils/normalizadores';
+import { hoje } from '@utils/formatters';
+import { useCarrossel } from '@hooks/useCarrossel';
+import { useDisponibilidade } from '@hooks/useDisponibilidade';
 import './Acomodacoes.css';
 
-const STATUS_LABELS = {
-  disponivel: 'Disponível',
-  manutencao: 'Manutenção',
-  indisponivel: 'Indisponível',
-};
-
-const formatarStatus = (valor) => {
-  if (!valor) return 'Disponível';
-  const chave = String(valor).toLowerCase();
-  return STATUS_LABELS[chave] ?? valor;
-};
-
-const normalizar = (item) => {
-  const fotos = item.galeria_fotos?.map(f => f.url_imagem).filter(Boolean) ?? [];
-  if (fotos.length === 0 && item.imagem) fotos.push(item.imagem);
-  return {
-    id:          item.id,
-    nome:        item.nome,
-    descricao:   item.descricao ?? '',
-    fotos,
-    valorDiaria: Number(item.valor_diaria) || 0,
-    quantidade:  Number(item.quantidade) || 1,
-    badge:       formatarStatus(item.status ?? item.badge),
-    statusRaw:   (item.status ?? 'disponivel').toLowerCase(),
-    avaliacao:   item.avaliacao ?? '5.0',
-    localizacao: item.localizacao ?? 'Paraíso Nativo',
-    hospedes:    item.capacidade_pessoas
-                 ? `${item.capacidade_pessoas} Hóspede${item.capacidade_pessoas > 1 ? 's' : ''}`
-                 : (item.hospedes ?? '2 Hóspedes'),
-  };
-};
+const HOJE = hoje();
 
 // ─── Modal de foto ────────────────────────────────────────────────────────────
 const PhotoModal = ({ fotos, nome, initialIndex, onClose }) => {
@@ -61,6 +35,9 @@ const PhotoModal = ({ fotos, nome, initialIndex, onClose }) => {
     return () => window.removeEventListener('keydown', handle);
   }, [fotos.length]);
 
+  const prev = () => setIdx(i => (i - 1 + fotos.length) % fotos.length);
+  const next = () => setIdx(i => (i + 1) % fotos.length);
+
   return (
     <div className="photo-modal-overlay" onClick={onClose}>
       <button className="photo-modal-close" onClick={onClose}><FaTimes /></button>
@@ -68,18 +45,8 @@ const PhotoModal = ({ fotos, nome, initialIndex, onClose }) => {
         <img src={fotos[idx]} alt={`${nome} — foto ${idx + 1}`} />
         {fotos.length > 1 && (
           <>
-            <button
-              className="photo-modal-nav left"
-              onClick={() => setIdx(i => (i - 1 + fotos.length) % fotos.length)}
-            >
-              <FaChevronLeft />
-            </button>
-            <button
-              className="photo-modal-nav right"
-              onClick={() => setIdx(i => (i + 1) % fotos.length)}
-            >
-              <FaChevronRight />
-            </button>
+            <button className="photo-modal-nav left" onClick={prev}><FaChevronLeft /></button>
+            <button className="photo-modal-nav right" onClick={next}><FaChevronRight /></button>
           </>
         )}
       </div>
@@ -88,78 +55,29 @@ const PhotoModal = ({ fotos, nome, initialIndex, onClose }) => {
   );
 };
 
-// ─── Card de acomodação ───────────────────────────────────────────────────────
+// ─── Card ─────────────────────────────────────────────────────────────────────
 const AcomodacaoCard = ({ item, onIrParaReserva, onOpenModal }) => {
-  const { fotos } = item;
-  const [fotoIdx, setFotoIdx]       = useState(0);
-  const [checkin, setCheckin]       = useState('');
-  const [checkout, setCheckout]     = useState('');
-  const [consultando, setConsultando] = useState(false);
-  const [resultado, setResultado]   = useState(null);
-
-  const hoje = new Date().toISOString().split('T')[0];
-
-  const prev = (e) => { e.stopPropagation(); setFotoIdx(i => (i - 1 + fotos.length) % fotos.length); };
-  const next = (e) => { e.stopPropagation(); setFotoIdx(i => (i + 1) % fotos.length); };
-
-  const handleCheckin = (e) => {
-    const val = e.target.value;
-    setCheckin(val);
-    setResultado(null);
-    if (checkout && val >= checkout) setCheckout('');
-  };
-
-  const verificar = async () => {
-    if (!checkin || !checkout) return;
-    setConsultando(true);
-    setResultado(null);
-    try {
-      const EXPIRA_MIN = 20;
-      const limite = new Date(Date.now() - EXPIRA_MIN * 60 * 1000).toISOString();
-
-      const { data: conflito, error } = await supabase
-        .from('reservas')
-        .select('id')
-        .eq('id_acomodacao', item.id)
-        .not('status_reserva', 'eq', 'cancelada')
-        .lte('data_checkin', checkout)
-        .gte('data_checkout', checkin)
-        .or(`status_reserva.neq.pendente,criado_em.gt.${limite}`);
-
-      if (error) throw error;
-
-      const disponiveis = item.quantidade - conflito.length;
-      const disponivel  = disponiveis > 0;
-      const noites      = Math.ceil((new Date(checkout) - new Date(checkin)) / 86_400_000);
-      const valorTotal  = disponivel && item.valorDiaria > 0 ? noites * item.valorDiaria : null;
-
-      setResultado({ disponivel, disponiveis, noites, valorTotal });
-    } catch {
-      setResultado({ erro: true });
-    } finally {
-      setConsultando(false);
-    }
-  };
-
-  const usarDots = fotos.length > 1 && fotos.length <= 7;
+  const { idx, setIdx, prev, next, usarDots } = useCarrossel(item.fotos);
+  const { checkin, checkout, consultando, resultado, handleCheckin, handleCheckout, verificar } = useDisponibilidade(item);
 
   return (
     <div className="accom-card">
+
       {/* ── Carrossel ── */}
       <div
         className="accom-card-image"
-        onClick={() => onOpenModal(fotos, item.nome, fotoIdx)}
+        onClick={() => onOpenModal(item.fotos, item.nome, idx)}
         title="Clique para ampliar"
       >
-        <img src={fotos[fotoIdx]} alt={item.nome} loading="lazy" />
+        <img src={item.fotos[idx]} alt={item.nome} loading="lazy" />
         <span className={`accom-badge accom-badge-${item.statusRaw}`}>{item.badge}</span>
 
-        {fotos.length > 1 && (
+        {item.fotos.length > 1 && (
           <>
-            <button className="carousel-btn left" onClick={prev} aria-label="Foto anterior">
+            <button className="carousel-btn left" onClick={e => { e.stopPropagation(); prev(); }} aria-label="Foto anterior">
               <FaChevronLeft />
             </button>
-            <button className="carousel-btn right" onClick={next} aria-label="Próxima foto">
+            <button className="carousel-btn right" onClick={e => { e.stopPropagation(); next(); }} aria-label="Próxima foto">
               <FaChevronRight />
             </button>
           </>
@@ -167,22 +85,24 @@ const AcomodacaoCard = ({ item, onIrParaReserva, onOpenModal }) => {
 
         {usarDots && (
           <div className="carousel-dots">
-            {fotos.map((_, i) => (
+            {item.fotos.map((_, i) => (
               <button
                 key={i}
-                className={`carousel-dot${i === fotoIdx ? ' active' : ''}`}
-                onClick={e => { e.stopPropagation(); setFotoIdx(i); }}
+                className={`carousel-dot${i === idx ? ' active' : ''}`}
+                onClick={e => { e.stopPropagation(); setIdx(i); }}
                 aria-label={`Foto ${i + 1}`}
               />
             ))}
           </div>
         )}
 
-        {!usarDots && fotos.length > 1 && (
-          <div className="carousel-counter-badge">{fotoIdx + 1}/{fotos.length}</div>
+        {!usarDots && item.fotos.length > 1 && (
+          <div className="carousel-counter-badge">{idx + 1}/{item.fotos.length}</div>
         )}
 
-        <div className="accom-expand-hint"><FaChevronRight style={{ transform: 'rotate(-45deg)' }} /></div>
+        <div className="accom-expand-hint">
+          <FaChevronRight style={{ transform: 'rotate(-45deg)' }} />
+        </div>
       </div>
 
       {/* ── Corpo ── */}
@@ -194,22 +114,17 @@ const AcomodacaoCard = ({ item, onIrParaReserva, onOpenModal }) => {
         <h3 className="accom-name">{item.nome}</h3>
         <p className="accom-desc">{item.descricao}</p>
 
-        {/* ── Verificar disponibilidade ── */}
+        {/* ── Disponibilidade ── */}
         <div className="accom-availability">
           <p className="accom-avail-label">Verificar disponibilidade</p>
           <div className="accom-dates">
             <div className="accom-date-field">
               <label>Check-in</label>
-              <input type="date" value={checkin} min={hoje} onChange={handleCheckin} />
+              <input type="date" value={checkin} min={HOJE} onChange={handleCheckin} />
             </div>
             <div className="accom-date-field">
               <label>Check-out</label>
-              <input
-                type="date"
-                value={checkout}
-                min={checkin || hoje}
-                onChange={e => { setCheckout(e.target.value); setResultado(null); }}
-              />
+              <input type="date" value={checkout} min={checkin || HOJE} onChange={handleCheckout} />
             </div>
           </div>
           <button
@@ -265,6 +180,7 @@ const AcomodacaoCard = ({ item, onIrParaReserva, onOpenModal }) => {
           </button>
         </div>
       </div>
+
     </div>
   );
 };
@@ -286,10 +202,7 @@ const Acomodacoes = () => {
   useEffect(() => {
     let cancelado = false;
     acomodacaoService.listarTodasComFotos()
-      .then((dados) => {
-        if (cancelado) return;
-        if (dados?.length > 0) setAcomodacoes(dados.map(normalizar));
-      })
+      .then(dados => { if (!cancelado && dados?.length > 0) setAcomodacoes(dados.map(normalizarAcomodacaoCard)); })
       .catch(() => { if (!cancelado) setErro('Erro ao exibir as acomodações.'); })
       .finally(() => { if (!cancelado) setLoading(false); });
     return () => { cancelado = true; };
@@ -310,7 +223,7 @@ const Acomodacoes = () => {
         <>
           {erro && <p className="accom-notice">{erro}</p>}
           <div className="accommodation-grid">
-            {acomodacoes.map((item) => (
+            {acomodacoes.map(item => (
               <AcomodacaoCard
                 key={item.id}
                 item={item}
