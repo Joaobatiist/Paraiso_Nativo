@@ -233,7 +233,7 @@ const GerenciarReservas = ({ modoCliente = false, userId = null }) => {
           <FaSyncAlt /> Atualizar
         </button>
         {modoCliente ? (
-          <button onClick={() => { window.location.href = '/reserva'; }} className="btn-reservar-more">
+          <button onClick={() => { window.location.href = '/dashboard?page=reservar'; }} className="btn-reservar-more">
             <FaPlus /> Reservar mais
           </button>
         ) : (

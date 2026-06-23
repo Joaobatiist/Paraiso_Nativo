@@ -52,34 +52,72 @@ export const reservaService = {
     }
   },
 
-async criarNovaReserva(dadosReserva) {
-  try {
-    const EXPIRACAO_MINUTOS = 20;
-    const limite = new Date(Date.now() - EXPIRACAO_MINUTOS * 60 * 1000).toISOString();
+  // Verifica disponibilidade sem criar reserva — usado na home e no formulário
+  async verificarDisponibilidade(idAcomodacao, checkin, checkout, quantidade = 1) {
+    const limite = new Date(Date.now() - 20 * 60 * 1000).toISOString();
 
-    // Cancela reservas pendentes expiradas antes de verificar conflito
-    await supabase.rpc('cancelar_reservas_expiradas');
-
-    // Verifica conflito ignorando reservas pendentes expiradas
-    const { data: conflito, error: erroQuery } = await supabase
+    const { data, error } = await supabase
       .from('reservas')
       .select('id')
-      .eq('id_acomodacao', dadosReserva.id_acomodacao)
+      .eq('id_acomodacao', idAcomodacao)
       .not('status_reserva', 'eq', 'cancelada')
-      .lte('data_checkin', dadosReserva.data_checkout)
-      .gte('data_checkout', dadosReserva.data_checkin)
+      .lte('data_checkin', checkout)
+      .gte('data_checkout', checkin)
       .or(`status_reserva.neq.pendente,criado_em.gt.${limite}`);
 
-    if (erroQuery) throw erroQuery;
+    if (error) throw error;
 
-    if (conflito && conflito.length > 0) {
-      throw new Error("Este quarto já está reservado para as datas selecionadas.");
+    const reservasAtivas = data?.length ?? 0;
+    const disponiveis    = Math.max(0, quantidade - reservasAtivas);
+    return { disponivel: disponiveis > 0, disponiveis };
+  },
+
+async criarNovaReserva(dadosReserva) {
+  let quantidade = 1;
+  try {
+    await supabase.rpc('cancelar_reservas_expiradas');
+
+    const { data: acomData, error: erroAcom } = await supabase
+      .from('acomodacoes')
+      .select('quantidade')
+      .eq('id', dadosReserva.id_acomodacao)
+      .single();
+
+    if (erroAcom) throw erroAcom;
+    quantidade = acomData?.quantidade ?? 1;
+
+    const { disponivel } = await reservaService.verificarDisponibilidade(
+      dadosReserva.id_acomodacao,
+      dadosReserva.data_checkin,
+      dadosReserva.data_checkout,
+      quantidade,
+    );
+
+    if (!disponivel) {
+      throw new Error(
+        quantidade > 1
+          ? `Sem vagas disponíveis para este período. Todas as ${quantidade} unidades estão ocupadas.`
+          : 'Esta acomodação já está reservada para as datas selecionadas.'
+      );
     }
 
     const created = await supabaseService.create('reservas', dadosReserva);
     reservaService._cache = {};
     return created;
   } catch (error) {
+    const msg = error?.message ?? '';
+    const eTriggerSemVaga =
+      error?.code === 'P0001' ||
+      msg.includes('impedir_conflito') ||
+      msg.includes('exclusion constraint');
+
+    if (eTriggerSemVaga) {
+      throw new Error(
+        quantidade > 1
+          ? `Sem vagas disponíveis para este período. Todas as ${quantidade} unidades estão ocupadas.`
+          : 'Esta acomodação já está reservada para as datas selecionadas.'
+      );
+    }
     throw error;
   }
 },

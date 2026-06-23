@@ -20,6 +20,13 @@
 	cursor: pointer;
 	font-size: 13px;
 	text-transform: capitalize;
+	transition: all 0.2 ease;
+}
+
+.gerenciar-reservas .filter-button:hover, .btn-refresh-small:hover,
+.btn-nova-reserva:hover, .btn-reservar-more:hover{
+  transform: scale(1.03);
+  box-shadow: 0 4px 12px rgba(80, 132, 229, 0.3);
 }
 
 .gerenciar-reservas .filter-button.active {
@@ -31,12 +38,15 @@
 	margin-left: auto;
 	padding: 6px 16px;
 	border-radius: 20px;
-	border: 1px solid var(--gray-300);
-	background: var(--gray-100);
-	color: var(--gray-700);
+	border: none;
+	background: linear-gradient(135deg, #1a5fc0, #1a5fc0);
+	color: white;
 	cursor: pointer;
 	font-size: 13px;
+	font-weight: 600;
+	box-shadow: 0 3px 10px rgba(5, 85, 150, 0.28);
 }
+
 
 .gerenciar-reservas .btn-reservar-more {
 	display: flex;

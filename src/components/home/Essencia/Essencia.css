@@ -30,7 +30,7 @@
 .essence-inner {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 88px;
+  gap: 64px;
   max-width: 1200px;
   margin: 0 auto;
   align-items: center;
@@ -44,7 +44,7 @@
   font-family: 'Inter', sans-serif;
   font-size: 1.05rem;
   color: rgba(255, 255, 255, 0.72);
-  line-height: 1.95;
+  line-height: 1.7;
   margin: 0 0 20px;
 }
 
@@ -58,22 +58,27 @@
 
 .pillar {
   text-align: center;
-  padding: 26px 14px;
-  border: 1px solid rgba(255, 179, 71, 0.18);
+  padding: 28px 16px;
+  border: 1px solid rgba(255, 179, 71, 0.15);
+  border-top: 2px solid rgba(255, 179, 71, 0.15);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   transition: var(--transition);
   cursor: default;
 }
 
 .pillar:hover {
-  border-color: var(--orange);
+  border-color: rgba(255, 179, 71, 0.3);
+  border-top-color: var(--orange);
   background: rgba(255, 179, 71, 0.07);
-  transform: translateY(-4px);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.45);
+  transform: translateY(-5px);
 }
 
 .pillar-icon {
-  font-size: 1.75rem;
+  font-size: 2.1rem;
   color: var(--orange);
   display: block;
   margin: 0 auto 10px;
@@ -90,8 +95,8 @@
 
 .pillar-desc {
   font-family: 'Inter', sans-serif;
-  font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.48);
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.65);
   line-height: 1.55;
   margin: 0;
 }
@@ -105,8 +110,19 @@
 }
 
 .mosaic-img {
+  position: relative;
   border-radius: 20px;
   overflow: hidden;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+}
+
+.mosaic-img::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.5) 0%, transparent 55%);
+  pointer-events: none;
+  border-radius: 20px;
 }
 
 .mosaic-img img {
@@ -155,7 +171,7 @@
 @media (max-width: 680px) {
   .essence-section { padding: 110px 16px; }
   .essence-pillars {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
   .mosaic-img-tall  { height: 220px; }

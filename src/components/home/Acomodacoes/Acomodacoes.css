@@ -1,6 +1,6 @@
 .accommodation-section {
   background: var(--bg-main);
-  padding: 120px 24px;
+  padding: 30px 24px 80px;
 }
 
 .accommodation-grid {
@@ -11,25 +11,29 @@
   margin: 0 auto;
 }
 
-/* Card */
+/* ── Card ── */
 .accom-card {
   background: var(--white);
   border-radius: var(--radius-card);
   overflow: hidden;
   box-shadow: var(--shadow-card);
   transition: var(--transition);
+  display: flex;
+  flex-direction: column;
 }
 
 .accom-card:hover {
-  transform: translateY(-10px);
+  transform: translateY(-6px);
   box-shadow: 0 24px 64px rgba(0, 74, 173, 0.16);
 }
 
-/* Imagem */
+/* ── Imagem / carrossel ── */
 .accom-card-image {
   position: relative;
   height: 240px;
   overflow: hidden;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .accom-card-image img {
@@ -41,70 +45,318 @@
 }
 
 .accom-card:hover .accom-card-image img {
-  transform: scale(1.08);
+  transform: scale(1.06);
 }
 
+/* hint de expandir */
+.accom-expand-hint {
+  position: absolute;
+  bottom: 48px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  background: rgba(0,0,0,0.45);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.8rem;
+  opacity: 0;
+  transition: opacity 0.25s;
+  pointer-events: none;
+  z-index: 4;
+}
+
+.accom-card-image:hover .accom-expand-hint {
+  opacity: 1;
+}
+
+/* ── Badge de status ── */
 .accom-badge {
   position: absolute;
-  top: 16px;
-  left: 16px;
-  background: var(--orange);
+  top: 14px;
+  left: 14px;
+  z-index: 3;
   color: #fff;
   font-family: 'Inter', sans-serif;
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  padding: 6px 14px;
+  padding: 5px 12px;
   border-radius: var(--radius-pill);
+  background: var(--orange);
 }
 
-/* Corpo */
+.accom-badge-disponivel   { background: #16a34a; }
+.accom-badge-manutencao   { background: #92400e; }
+.accom-badge-indisponivel { background: #dc2626; }
+
+/* ── Botões do carrossel ── */
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  background: rgba(0, 0, 0, 0.48);
+  border: none;
+  color: white;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  transition: background 0.2s;
+  opacity: 0;
+}
+
+.accom-card-image:hover .carousel-btn {
+  opacity: 1;
+}
+
+.carousel-btn:hover { background: rgba(0, 0, 0, 0.75); }
+.carousel-btn.left  { left: 10px; }
+.carousel-btn.right { right: 10px; }
+
+/* dots */
+.carousel-dots {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 3;
+}
+
+.carousel-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.carousel-dot.active {
+  background: #fff;
+  transform: scale(1.25);
+}
+
+/* contador quando muitas fotos */
+.carousel-counter-badge {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.55);
+  color: white;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+  z-index: 3;
+}
+
+/* ── Corpo do card ── */
 .accom-card-body {
-  padding: 28px;
+  padding: 22px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 
 .accom-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .accom-location,
 .accom-rating {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   font-family: 'Inter', sans-serif;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--text-secondary);
 }
 
-.accom-rating svg {
-  color: var(--orange);
-}
+.accom-rating svg { color: var(--orange); }
 
 .accom-name {
   font-family: 'Playfair Display', serif;
-  font-size: 1.45rem;
+  font-size: 1.35rem;
   color: var(--text-primary);
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   letter-spacing: -0.01em;
 }
 
 .accom-desc {
   font-family: 'Inter', sans-serif;
-  font-size: 0.93rem;
+  font-size: 0.9rem;
   color: var(--text-secondary);
-  line-height: 1.75;
-  margin: 0 0 24px;
+  line-height: 1.65;
+  margin: 0 0 18px;
 }
 
+/* ── Verificar disponibilidade ── */
+.accom-availability {
+  border-top: 1px solid #ede8e0;
+  padding-top: 16px;
+  margin-bottom: 16px;
+}
+
+.accom-avail-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin: 0 0 10px;
+}
+
+.accom-dates {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.accom-date-field label {
+  display: block;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+
+.accom-date-field input[type="date"] {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1.5px solid #e2d9ce;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.83rem;
+  color: var(--text-primary);
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.accom-date-field input[type="date"]:focus {
+  outline: none;
+  border-color: var(--blue);
+}
+
+.accom-check-btn {
+  width: 100%;
+  padding: 10px;
+  background: var(--blue);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.accom-check-btn:hover:not(:disabled) { background: var(--blue-hover); }
+.accom-check-btn:disabled { opacity: 0.42; cursor: not-allowed; }
+
+/* resultado */
+.accom-result {
+  margin-top: 12px;
+  padding: 14px;
+  border-radius: 12px;
+}
+
+.accom-result.ok  { background: #f0fdf4; border: 1.5px solid #86efac; }
+.accom-result.nok { background: #fef2f2; border: 1.5px solid #fca5a5; }
+
+.accom-result-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.accom-result.ok  .accom-result-header { color: #16a34a; }
+.accom-result.nok .accom-result-header { color: #dc2626; }
+
+.accom-result-icon { font-size: 1rem; flex-shrink: 0; }
+
+.accom-result-price {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px 0 12px;
+}
+
+.accom-result-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.accom-result-total {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.accom-cta-reservar {
+  width: 100%;
+  justify-content: center;
+  padding: 10px 22px;
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-pill);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: var(--transition);
+}
+
+.accom-cta-reservar:hover { background: var(--orange-dark); }
+
+.accom-result-erro {
+  margin-top: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8rem;
+  color: #dc2626;
+}
+
+/* ── Footer do card ── */
 .accom-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-top: auto;
+  padding-top: 4px;
 }
 
 .accom-guests {
@@ -134,12 +386,91 @@
   transition: var(--transition);
 }
 
-.accom-cta:hover {
-  background: var(--blue);
-  color: var(--white);
+.accom-cta:hover { background: var(--blue); color: var(--white); }
+
+/* ── Modal de foto ── */
+.photo-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
 }
 
-/* ---- Loading state ---- */
+.photo-modal-close {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  z-index: 10000;
+}
+
+.photo-modal-close:hover { background: rgba(255, 255, 255, 0.3); }
+
+.photo-modal {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: min(92vw, 1100px);
+  max-height: 82vh;
+}
+
+.photo-modal img {
+  max-width: 100%;
+  max-height: 80vh;
+  object-fit: contain;
+  border-radius: 12px;
+  display: block;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+
+.photo-modal-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: white;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  z-index: 2;
+}
+
+.photo-modal-nav:hover { background: rgba(255, 255, 255, 0.3); }
+.photo-modal-nav.left  { left: -64px; }
+.photo-modal-nav.right { right: -64px; }
+
+.photo-modal-counter {
+  margin-top: 16px;
+  color: rgba(255, 255, 255, 0.65);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+}
+
+/* ── Loading ── */
 .accom-loading {
   display: flex;
   flex-direction: column;
@@ -161,9 +492,7 @@
   animation: spin 0.9s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .accom-notice {
   text-align: center;
@@ -174,9 +503,9 @@
   opacity: 0.7;
 }
 
-/* ---- Responsivo ---- */
+/* ── Responsivo ── */
 @media (max-width: 1023px) {
-  .accommodation-section { padding: 90px 20px; }
+  .accommodation-section { padding: 24px 20px 60px; }
   .accommodation-grid {
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 24px;
@@ -184,11 +513,16 @@
 }
 
 @media (max-width: 680px) {
-  .accommodation-section { padding: 70px 16px; }
-  .accommodation-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-  .accom-card-image { height: 200px; }
-  .accom-card-body { padding: 20px; }
+  .accommodation-section { padding: 16px 16px 50px; }
+  .accommodation-grid { grid-template-columns: 1fr; gap: 20px; }
+  .accom-card-image { height: 210px; }
+  .accom-card-body { padding: 18px 18px 20px; }
+  .photo-modal-nav.left  { left: -40px; }
+  .photo-modal-nav.right { right: -40px; }
+}
+
+@media (max-width: 480px) {
+  .photo-modal-nav { width: 38px; height: 38px; font-size: 0.9rem; }
+  .photo-modal-nav.left  { left: 4px; }
+  .photo-modal-nav.right { right: 4px; }
 }

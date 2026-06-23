@@ -1,10 +1,22 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { FaBed, FaEdit, FaSyncAlt, FaExclamationTriangle } from 'react-icons/fa';
-import { acomodacaoService } from '../../../services/acomodacaoService';
+import { FaBed, FaEdit, FaSyncAlt, FaExclamationTriangle, FaPlus } from 'react-icons/fa';
+import { acomodacaoService } from '@services/acomodacaoService';
 import EditarAcomodacaoModal from './EditarAcomodacaoModal';
 import './GerenciarAcomodacoes.css';
 
-const statusOpcoes = ['disponivel', 'manutencao', 'indisponivel'];
+
+const statusOpcoes = [
+  { value: 'disponivel', label: 'Disponível' },
+  { value: 'manutencao', label: 'Manutenção' },
+  { value: 'indisponivel', label: 'Indisponível' },
+];
+
+const STATUS_PADRAO = 'disponivel';
+
+const getStatusLabel = (value) => {
+  const opcao = statusOpcoes.find(o => o.value === value);
+  return opcao ? opcao.label : value;
+};
 
 const GerenciarAcomodacoes = ({ onNovaCadastro }) => {
   const [acomodacoes, setAcomodacoes] = useState([]);
@@ -41,6 +53,7 @@ const GerenciarAcomodacoes = ({ onNovaCadastro }) => {
   const AcomRow = ({ a }) => {
     const fotos = a.galeria_fotos || [];
     const capa = fotos[0]?.url_imagem || null;
+    const statusAtual = a.status || STATUS_PADRAO;
 
     return (
       <tr>
@@ -55,12 +68,12 @@ const GerenciarAcomodacoes = ({ onNovaCadastro }) => {
         <td>{a.capacidade_pessoas ?? '—'} pax</td>
         <td>
           <select
-            value={a.status || 'disponivel'}
+            value={statusAtual}
             onChange={(e) => handleMudarStatus(a.id, e.target.value)}
             className="acom-status-select"
           >
-            {statusOpcoes.map(s => (
-              <option key={s} value={s}>{s}</option>
+            {statusOpcoes.map(opcao => (
+              <option key={opcao.value} value={opcao.value}>{opcao.label}</option>
             ))}
           </select>
         </td>
@@ -83,6 +96,7 @@ const GerenciarAcomodacoes = ({ onNovaCadastro }) => {
   const AcomCard = ({ a }) => {
     const fotos = a.galeria_fotos || [];
     const capa = fotos[0]?.url_imagem || null;
+    const statusAtual = a.status || STATUS_PADRAO;
 
     return (
       <div className="dash-card">
@@ -94,17 +108,19 @@ const GerenciarAcomodacoes = ({ onNovaCadastro }) => {
         <p><strong>Capacidade:</strong> {a.capacidade_pessoas ?? '—'} pax</p>
         <p><strong>Fotos:</strong> {fotos.length}</p>
         <p>
-          <span className={`status-badge ${a.status || 'disponivel'}`}>
-            {a.status || 'disponivel'}
+          <span className={`status-badge ${statusAtual}`}>
+            {getStatusLabel(statusAtual)}
           </span>
         </p>
         <div className="dash-card-actions">
           <select
-            value={a.status || 'disponivel'}
+            value={statusAtual}
             onChange={(e) => handleMudarStatus(a.id, e.target.value)}
             className="dash-card-select"
           >
-            {statusOpcoes.map(s => <option key={s} value={s}>{s}</option>)}
+            {statusOpcoes.map(opcao => (
+              <option key={opcao.value} value={opcao.value}>{opcao.label}</option>
+            ))}
           </select>
           <button className="edit-button" onClick={() => setEditando(a)}><FaEdit /> Editar</button>
         </div>
@@ -128,7 +144,7 @@ const GerenciarAcomodacoes = ({ onNovaCadastro }) => {
               onClick={onNovaCadastro}
               className="btn-nova-acom"
             >
-              + Nova Acomodação
+              <FaPlus/> Nova Acomodação
             </button>
           )}
         </div>

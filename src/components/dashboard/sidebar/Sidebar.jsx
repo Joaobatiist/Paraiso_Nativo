@@ -29,7 +29,7 @@ const Sidebar = ({ user, perfil, currentPage, setCurrentPage, isSidebarOpen, set
     {
       id: 'voltar',
       icon: FaLeaf,
-      label: 'Voltar ao Site',
+      label: 'Voltar tela principal',
       action: () => { window.location.href = '/'; },
       className: 'secondary',
     },
@@ -56,7 +56,7 @@ const Sidebar = ({ user, perfil, currentPage, setCurrentPage, isSidebarOpen, set
       <div className="sidebar-header">
         <img src="/logo.png" alt="Paraíso Nativo" className="sidebar-logo" />
         <div>
-          <h3 className="sidebar-title">Paraíso Nativo</h3>
+          <a className="sidebar-title" href='/'>Paraíso Nativo</a>
         </div>
       </div>
 

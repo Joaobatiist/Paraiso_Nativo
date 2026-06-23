@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { acomodacaoService } from '@services/acomodacaoService';
 import { galeriaService } from '@services/galeriaService';
 import { storageService } from '@services/arquivoService';
-import { FaBed, FaSyncAlt, FaExclamationTriangle, FaSpinner, FaTimes } from 'react-icons/fa';
+import { FaBed, FaSyncAlt, FaExclamationTriangle, FaSpinner, FaTimes, FaPlus } from 'react-icons/fa';
 import './GerenciarGaleria.css';
 
 const GerenciarGaleria = () => {
@@ -36,8 +36,8 @@ const GerenciarGaleria = () => {
     setSalvando(prev => ({ ...prev, [idAcom]: true }));
     try {
       const url = await storageService.subirFotoAcomodacao(f.arquivo);
-      await galeriaService.adicionarFoto(idAcom, url, f.legenda?.trim() || null);
-      setAddForm(prev => ({ ...prev, [idAcom]: { arquivo: null, legenda: '' } }));
+      await galeriaService.adicionarFoto(idAcom, url || null);
+      setAddForm(prev => ({ ...prev, [idAcom]: { arquivo: null} }));
       await carregar();
     } catch (e) {
       console.error('Erro ao adicionar foto')
@@ -102,7 +102,7 @@ const GerenciarGaleria = () => {
                     <div key={foto.id} className="galeria-foto-item">
                       <img
                         src={foto.url_imagem}
-                        alt={foto.legenda || acom.nome}
+                        alt={ acom.nome}
                         onError={e => { e.target.style.display = 'none'; }}
                       />
                       <button
@@ -129,19 +129,13 @@ const GerenciarGaleria = () => {
                   accept="image/*"
                   onChange={e => setField(acom.id, 'arquivo', e.target.files[0] || null)}
                 />
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="Legenda (opcional)"
-                  value={f.legenda || ''}
-                  onChange={e => setField(acom.id, 'legenda', e.target.value)}
-                />
+                
                 <button
                   className="galeria-add-btn"
                   onClick={() => handleAddFoto(acom.id)}
                   disabled={salvando[acom.id]}
                 >
-                  {salvando[acom.id] ? <FaSpinner className="loading-spinner" /> : '+ Adicionar'}
+                  {salvando[acom.id] ? <FaSpinner className="loading-spinner" /> :  'Adicionar'}
                 </button>
               </div>
             </div>
