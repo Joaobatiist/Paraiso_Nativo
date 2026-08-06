@@ -54,7 +54,7 @@ const Sidebar = ({ user, perfil, currentPage, setCurrentPage, isSidebarOpen, set
   return (
     <div className={`sidebar ${isSidebarOpen ? 'open' : 'collapsed'}`}>
       <div className="sidebar-header">
-        <img src="/logo.png" alt="Paraíso Nativo" className="sidebar-logo" />
+        <img src="/logoPa.png" alt="Paraíso Nativo" className="sidebar-logo" />
         <div>
           <a className="sidebar-title" href='/'>Paraíso Nativo</a>
         </div>

@@ -221,13 +221,14 @@
 
 .reserva-form-grid {
 	display: grid;
-	grid-template-columns: repeat(3, minmax(150px, 1fr));
+	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 12px;
 }
 
 .reserva-form-grid label {
 	display: grid;
 	gap: 7px;
+	min-width: 0;
 	font-family: 'Inter', sans-serif;
 	font-size: .88rem;
 	color: #334e68;
@@ -240,11 +241,19 @@
 }
 
 .reserva-form-grid input {
+	width: 100%;
+	box-sizing: border-box;
 	border: 1px solid #d7dee9;
 	border-radius: 10px;
 	padding: 10px 11px;
 	font-family: 'Inter', sans-serif;
 	font-size: .94rem;
+}
+
+.reserva-form-grid input[type="date"] {
+	min-width: 0;
+	appearance: none;
+	-webkit-appearance: none;
 }
 
 .reserva-form-grid input:focus {
@@ -342,6 +351,7 @@
 		grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 	}
 }
+
 
 /* ── Aviso de perfil incompleto ── */
 .reserva-perfil-aviso {
@@ -655,7 +665,11 @@
 	}
 
 	.reserva-form-grid {
-		grid-template-columns: 1fr;
+		grid-template-columns: 1fr 1fr;
+	}
+
+	.reserva-form-grid label:nth-child(3) {
+		grid-column: 1 / -1;
 	}
 
 	.reserva-perfil-grid {
@@ -665,5 +679,11 @@
 	.reserva-resumo {
 		flex-direction: column;
 		align-items: flex-start;
+	}
+}
+
+@media (max-width: 380px) {
+	.reserva-form-grid {
+		grid-template-columns: 1fr;
 	}
 }
