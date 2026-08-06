@@ -180,7 +180,7 @@ const LoginForm = ({ onLogin }) => {
         </button>
 
         <div className="login-header">
-          <img src="/logo.png" alt="Paraíso Nativo" className="login-logo" />
+          <img src="/logoPa.png" alt="Paraíso Nativo" className="login-logo" />
           <h3>
             {authModo === 'esqueci' ? 'Redefinir senha' : 'Bem-vindo ao Paraíso Nativo'}
           </h3>

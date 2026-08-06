@@ -52,7 +52,7 @@ const RedefinirSenha = () => {
     <div className="reserva-login-page">
       <div className="reserva-auth-gate">
         <div className="login-header">
-          <img src="/logo.png" alt="Paraíso Nativo" className="login-logo" />
+          <img src="/logoPa.png" alt="Paraíso Nativo" className="login-logo" />
           <h3>Nova senha</h3>
           <p>
             {sessaoOk

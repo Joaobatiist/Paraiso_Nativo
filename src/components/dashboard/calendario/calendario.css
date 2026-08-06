@@ -441,6 +441,10 @@
     padding: 1rem;
   }
 
+  .calendario-wrapper {
+    padding: 1rem;
+  }
+
   .calendario-meses {
     grid-template-columns: 1fr;
   }
@@ -455,6 +459,77 @@
 
   .pacotes-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .calendario-container {
+    padding: 0.75rem;
+    gap: 1rem;
+  }
+
+  .calendario-wrapper,
+  .pacote-form,
+  .pacotes-lista {
+    padding: 0.85rem;
+  }
+
+  .calendario-navegacao {
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .mes-ano {
+    font-size: 1rem;
+    min-width: 60px;
+  }
+
+  .btn-nav {
+    width: 32px;
+    height: 32px;
+    font-size: 0.9rem;
+  }
+
+  .calendario-meses {
+    gap: 1rem;
+  }
+
+  .calendario-mes {
+    padding: 0.6rem;
+  }
+
+  .calendario-mes h3 {
+    font-size: 0.85rem;
+  }
+
+  .calendario-header span {
+    font-size: 0.65rem;
+    padding: 0.25rem 0;
+  }
+
+  .dia {
+    font-size: 0.75rem;
+    border-radius: 5px;
+  }
+
+  .form-buttons {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 360px) {
+  .calendario-dias,
+  .calendario-header {
+    gap: 1px;
+  }
+
+  .dia {
+    font-size: 0.68rem;
+    border-radius: 4px;
+  }
+
+  .calendario-header span {
+    font-size: 0.6rem;
   }
 }
 
